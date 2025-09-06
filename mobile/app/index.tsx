@@ -9,9 +9,19 @@ import {
   StyleSheet,
   SafeAreaView,
   StatusBar,
+  Dimensions,
+  Platform,
 } from "react-native";
 import { taskAPI, Task } from "../services/api";
 import { useRouter, useFocusEffect } from "expo-router";
+
+// Get screen dimensions
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+
+// Responsive breakpoints
+const isSmallDevice = screenWidth < 375;
+const isMediumDevice = screenWidth >= 375 && screenWidth < 414;
+const isLargeDevice = screenWidth >= 414;
 
 // Enhanced Task type with status field
 interface EnhancedTask extends Omit<Task, 'completed'> {
@@ -22,7 +32,16 @@ interface EnhancedTask extends Omit<Task, 'completed'> {
 export default function Index() {
   const [tasks, setTasks] = useState<EnhancedTask[]>([]);
   const [loading, setLoading] = useState(true);
+  const [orientation, setOrientation] = useState(
+    screenWidth > screenHeight ? 'landscape' : 'portrait'
+  );
   const router = useRouter();
+
+  // Update orientation on dimension changes
+  const updateOrientation = () => {
+    const { width, height } = Dimensions.get('window');
+    setOrientation(width > height ? 'landscape' : 'portrait');
+  };
 
   const fetchTasks = async () => {
     try {
@@ -95,14 +114,19 @@ export default function Index() {
   useFocusEffect(
     useCallback(() => {
       fetchTasks();
+      
+      // Listen for orientation changes
+      const subscription = Dimensions.addEventListener('change', updateOrientation);
+      
+      return () => subscription?.remove();
     }, [])
   );
 
   const renderEmptyState = () => (
     <View style={styles.emptyStateContainer}>
-      <Text style={styles.emptyStateIcon}>📝</Text>
-      <Text style={styles.emptyStateTitle}>No Tasks Yet</Text>
-      <Text style={styles.emptyStateSubtitle}>
+      <Text style={[styles.emptyStateIcon, { fontSize: isSmallDevice ? 48 : 64 }]}>📝</Text>
+      <Text style={[styles.emptyStateTitle, { fontSize: isSmallDevice ? 20 : 24 }]}>No Tasks Yet</Text>
+      <Text style={[styles.emptyStateSubtitle, { fontSize: isSmallDevice ? 14 : 16 }]}>
         Create your first task to get started with managing your productivity
       </Text>
       <TouchableOpacity
@@ -126,38 +150,54 @@ export default function Index() {
     );
   }
 
+  // Responsive stats layout
+  const statsPerRow = orientation === 'landscape' ? 3 : (isSmallDevice ? 3 : 3);
+  const statCardWidth = (screenWidth - 40 - (statsPerRow - 1) * 12) / statsPerRow;
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#f8f9fa" />
 
-      {/* Header Stats */}
-      <View style={styles.statsContainer}>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{tasks.filter(t => t.status === 'pending').length}</Text>
-          <Text style={styles.statLabel}>Pending</Text>
+      {/* Header Stats - Responsive Grid */}
+      <View style={[styles.statsContainer, { 
+        flexDirection: orientation === 'landscape' ? 'row' : 'row',
+        paddingHorizontal: isSmallDevice ? 12 : 20,
+      }]}>
+        <View style={[styles.statCard, { width: statCardWidth }]}>
+          <Text style={[styles.statNumber, { fontSize: isSmallDevice ? 20 : 24 }]}>
+            {tasks.filter(t => t.status === 'pending').length}
+          </Text>
+          <Text style={[styles.statLabel, { fontSize: isSmallDevice ? 10 : 12 }]}>Pending</Text>
         </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{tasks.filter(t => t.status === 'progress').length}</Text>
-          <Text style={styles.statLabel}>In Progress</Text>
+        <View style={[styles.statCard, { width: statCardWidth }]}>
+          <Text style={[styles.statNumber, { fontSize: isSmallDevice ? 20 : 24 }]}>
+            {tasks.filter(t => t.status === 'progress').length}
+          </Text>
+          <Text style={[styles.statLabel, { fontSize: isSmallDevice ? 10 : 12 }]}>In Progress</Text>
         </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{tasks.filter(t => t.status === 'done').length}</Text>
-          <Text style={styles.statLabel}>Completed</Text>
+        <View style={[styles.statCard, { width: statCardWidth }]}>
+          <Text style={[styles.statNumber, { fontSize: isSmallDevice ? 20 : 24 }]}>
+            {tasks.filter(t => t.status === 'done').length}
+          </Text>
+          <Text style={[styles.statLabel, { fontSize: isSmallDevice ? 10 : 12 }]}>Completed</Text>
         </View>
       </View>
 
-      {/* Add Task Button */}
+      {/* Add Task Button - Responsive */}
       <TouchableOpacity
-        style={styles.addTaskButton}
+        style={[styles.addTaskButton, { 
+          marginHorizontal: isSmallDevice ? 12 : 20,
+          paddingVertical: isSmallDevice ? 14 : 18,
+        }]}
         onPress={() => router.push("/add-task")}
       >
         <View style={styles.addTaskButtonContent}>
-          <Text style={styles.addTaskIcon}>+</Text>
-          <Text style={styles.addTaskButtonText}>Add New Task</Text>
+          <Text style={[styles.addTaskIcon, { fontSize: isSmallDevice ? 20 : 24 }]}>+</Text>
+          <Text style={[styles.addTaskButtonText, { fontSize: isSmallDevice ? 16 : 18 }]}>Add New Task</Text>
         </View>
       </TouchableOpacity>
 
-      {/* Task List */}
+      {/* Task List - Responsive */}
       {tasks.length === 0 ? (
         renderEmptyState()
       ) : (
@@ -165,47 +205,117 @@ export default function Index() {
           data={tasks}
           keyExtractor={(item) => item._id}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 20 }}
+          contentContainerStyle={{ 
+            paddingBottom: 20,
+            paddingHorizontal: isSmallDevice ? 12 : 20,
+          }}
           renderItem={({ item }) => {
             const statusInfo = getStatusInfo(item.status);
             return (
-              <View style={[styles.taskCard, { backgroundColor: statusInfo.bgColor }]}>
-                {/* Status Badge */}
-                <View style={[styles.statusBadge, { backgroundColor: statusInfo.color }]}>
-                  <Text style={styles.statusIcon}>{statusInfo.icon}</Text>
-                </View>
-
-                {/* Task Content */}
-                <View style={styles.taskContent}>
-                  <Text
-                    style={[
-                      styles.taskTitle,
-                      // Apply the line-through style conditionally
-                      item.status === 'done' && styles.completedTaskTitle,
-                    ]}
-                  >
-                    {item.title}
-                  </Text>
-
-                  {item.description ? (
-                    <Text style={styles.taskDescription}>{item.description}</Text>
-                  ) : null}
-
-                  {item.dueDate ? (
-                    <View style={styles.dueDateContainer}>
-                      <Text style={styles.dueDateIcon}>📅</Text>
-                      <Text style={styles.dueDateText}>
-                        {new Date(item.dueDate).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric'
-                        })}
+              <View style={[
+                styles.taskCard, 
+                { 
+                  backgroundColor: statusInfo.bgColor,
+                  marginHorizontal: 0, // Remove margin since we're using contentContainerStyle
+                  marginBottom: isSmallDevice ? 12 : 16,
+                  padding: isSmallDevice ? 16 : 20,
+                  flexDirection: orientation === 'landscape' && isLargeDevice ? 'row' : 'column',
+                }
+              ]}>
+                
+                {/* Top Section: Status Badge + Task Content */}
+                <View style={[
+                  styles.taskMainContent,
+                  { 
+                    flex: orientation === 'landscape' && isLargeDevice ? 1 : undefined,
+                    marginRight: orientation === 'landscape' && isLargeDevice ? 16 : 0,
+                  }
+                ]}>
+                  <View style={styles.taskHeader}>
+                    {/* Status Badge */}
+                    <View style={[
+                      styles.statusBadge, 
+                      { 
+                        backgroundColor: statusInfo.color,
+                        width: isSmallDevice ? 36 : 44,
+                        height: isSmallDevice ? 36 : 44,
+                        borderRadius: isSmallDevice ? 18 : 22,
+                      }
+                    ]}>
+                      <Text style={[styles.statusIcon, { fontSize: isSmallDevice ? 14 : 18 }]}>
+                        {statusInfo.icon}
                       </Text>
                     </View>
-                  ) : null}
 
-                  {/* Quick Status Buttons */}
-                  <View style={styles.quickStatusButtons}>
+                    {/* Task Content */}
+                    <View style={styles.taskContent}>
+                      <Text
+                        style={[
+                          styles.taskTitle,
+                          item.status === 'done' && styles.completedTaskTitle,
+                          { fontSize: isSmallDevice ? 16 : 18 }
+                        ]}
+                      >
+                        {item.title}
+                      </Text>
+
+                      {item.description ? (
+                        <Text style={[
+                          styles.taskDescription,
+                          { fontSize: isSmallDevice ? 13 : 15 }
+                        ]}>
+                          {item.description}
+                        </Text>
+                      ) : null}
+
+                      {item.dueDate ? (
+                        <View style={styles.dueDateContainer}>
+                          <Text style={[styles.dueDateIcon, { fontSize: isSmallDevice ? 12 : 14 }]}>📅</Text>
+                          <Text style={[styles.dueDateText, { fontSize: isSmallDevice ? 12 : 14 }]}>
+                            {new Date(item.dueDate).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric'
+                            })}
+                          </Text>
+                        </View>
+                      ) : null}
+                    </View>
+
+                    {/* Action Buttons - Mobile optimized position */}
+                    {orientation !== 'landscape' && (
+                      <View style={styles.actionButtonsVertical}>
+                        <TouchableOpacity
+                          style={[styles.editButton, { 
+                            width: isSmallDevice ? 32 : 40,
+                            height: isSmallDevice ? 32 : 40,
+                          }]}
+                          onPress={() => router.push({ pathname: "/edit-task", params: { id: item._id } })}
+                        >
+                          <Text style={[styles.editButtonText, { fontSize: isSmallDevice ? 12 : 16 }]}>✏️</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={[styles.deleteButton, { 
+                            width: isSmallDevice ? 32 : 40,
+                            height: isSmallDevice ? 32 : 40,
+                          }]}
+                          onPress={() => deleteTask(item._id)}
+                        >
+                          <Text style={[styles.deleteButtonText, { fontSize: isSmallDevice ? 12 : 16 }]}>🗑️</Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                  </View>
+
+                  {/* Quick Status Buttons - Responsive layout */}
+                  <View style={[
+                    styles.quickStatusButtons,
+                    { 
+                      flexWrap: 'wrap',
+                      justifyContent: isSmallDevice ? 'flex-start' : 'flex-start',
+                      marginTop: 12,
+                    }
+                  ]}>
                     {(['pending', 'progress', 'done'] as const).map((status) => {
                       const info = getStatusInfo(status);
                       const isCurrentStatus = item.status === status;
@@ -217,33 +327,52 @@ export default function Index() {
                             {
                               backgroundColor: isCurrentStatus ? info.color : '#fff',
                               borderColor: info.color,
+                              paddingVertical: isSmallDevice ? 6 : 8,
+                              paddingHorizontal: isSmallDevice ? 8 : 12,
+                              marginRight: 6,
+                              marginBottom: 6,
                             },
                           ]}
                           onPress={() => !isCurrentStatus && updateTaskStatus(item._id, status)}
                           disabled={isCurrentStatus}
                         >
-                          <Text style={styles.quickStatusIcon}>{info.icon}</Text>
+                          <View style={styles.quickStatusButtonContent}>
+                            <Text style={[styles.quickStatusIcon, { fontSize: isSmallDevice ? 12 : 16 }]}>
+                              {info.icon}
+                            </Text>
+                            <Text style={[
+                              styles.quickStatusText, 
+                              { 
+                                color: isCurrentStatus ? '#fff' : info.color,
+                                fontSize: isSmallDevice ? 10 : 12,
+                              }
+                            ]}>
+                              {info.label}
+                            </Text>
+                          </View>
                         </TouchableOpacity>
                       );
                     })}
                   </View>
                 </View>
 
-                {/* Action Buttons */}
-                <View style={styles.actionButtons}>
-                  <TouchableOpacity
-                    style={styles.editButton}
-                    onPress={() => router.push({ pathname: "/edit-task", params: { id: item._id } })}
-                  >
-                    <Text style={styles.editButtonText}>✏️</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.deleteButton}
-                    onPress={() => deleteTask(item._id)}
-                  >
-                    <Text style={styles.deleteButtonText}>🗑️</Text>
-                  </TouchableOpacity>
-                </View>
+                {/* Landscape Action Buttons */}
+                {orientation === 'landscape' && (
+                  <View style={styles.actionButtonsHorizontal}>
+                    <TouchableOpacity
+                      style={[styles.editButton, { marginBottom: 8 }]}
+                      onPress={() => router.push({ pathname: "/edit-task", params: { id: item._id } })}
+                    >
+                      <Text style={styles.editButtonText}>✏️</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.deleteButton}
+                      onPress={() => deleteTask(item._id)}
+                    >
+                      <Text style={styles.deleteButtonText}>🗑️</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
               </View>
             );
           }}
@@ -274,20 +403,45 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
 
-  // Stats Section (Header)
-  statsContainer: {
-    flexDirection: 'row',
+  // Custom Header Styles
+  headerContainer: {
+    paddingTop: 20,
+    paddingBottom: 20,
     paddingHorizontal: 20,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e9ecef',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  headerTitle: {
+    fontWeight: '800',
+    color: '#2c3e50',
+    textAlign: 'center',
+    marginBottom: 6,
+    letterSpacing: -0.5,
+  },
+  headerSubtitle: {
+    color: '#6c757d',
+    textAlign: 'center',
+    fontWeight: '500',
+    opacity: 0.8,
+  },
+
+  // Stats Section (Header) - Responsive
+  statsContainer: {
     paddingTop: 10,
-    paddingBottom: 10, // Reduced padding
+    paddingBottom: 10,
     gap: 12,
   },
   statCard: {
-    flex: 1,
     backgroundColor: '#fff',
-    borderRadius: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 12,
+    borderRadius: isSmallDevice ? 12 : 16,
+    paddingVertical: isSmallDevice ? 12 : 16,
+    paddingHorizontal: isSmallDevice ? 8 : 12,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -296,23 +450,21 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   statNumber: {
-    fontSize: 24,
     fontWeight: '700',
     color: '#2c3e50',
     marginBottom: 4,
   },
   statLabel: {
-    fontSize: 12,
     color: '#6c757d',
     fontWeight: '500',
+    textAlign: 'center',
   },
 
-  // Add Task Button
+  // Add Task Button - Responsive
   addTaskButton: {
-    marginHorizontal: 20,
-    marginBottom: 10, // Reduced margin
+    marginBottom: 10,
     backgroundColor: '#4ECDC4',
-    borderRadius: 16,
+    borderRadius: isSmallDevice ? 12 : 16,
     shadowColor: '#4ECDC4',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -323,101 +475,105 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 18,
     paddingHorizontal: 24,
   },
   addTaskIcon: {
-    fontSize: 24,
     color: '#fff',
     fontWeight: '300',
     marginRight: 12,
   },
   addTaskButtonText: {
     color: '#fff',
-    fontSize: 18,
     fontWeight: '600',
   },
 
-  // Task Cards
+  // Task Cards - Responsive
   taskCard: {
-    marginHorizontal: 20,
-    marginBottom: 16,
-    borderRadius: 20,
-    padding: 20,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    borderRadius: isSmallDevice ? 16 : 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
   },
+  taskMainContent: {
+    flex: 1,
+  },
+  taskHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
   statusBadge: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: isSmallDevice ? 12 : 16,
+    flexShrink: 0,
   },
   statusIcon: {
-    fontSize: 18,
+    color: '#fff',
   },
   taskContent: {
     flex: 1,
+    minWidth: 0, // Prevents text overflow
   },
   taskTitle: {
-    fontSize: 18,
     fontWeight: '700',
     color: '#2c3e50',
     marginBottom: 6,
-    lineHeight: 24,
+    lineHeight: isSmallDevice ? 20 : 24,
   },
-  // Correct style for the line-through effect
   completedTaskTitle: {
     textDecorationLine: 'line-through',
     color: '#95a5a6',
   },
   taskDescription: {
-    fontSize: 15,
     color: '#6c757d',
-    lineHeight: 22,
+    lineHeight: isSmallDevice ? 18 : 22,
     marginBottom: 12,
   },
   dueDateContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: isSmallDevice ? 8 : 16,
   },
   dueDateIcon: {
-    fontSize: 14,
     marginRight: 6,
   },
   dueDateText: {
-    fontSize: 14,
     color: '#7f8c8d',
     fontWeight: '500',
   },
   quickStatusButtons: {
     flexDirection: 'row',
-    gap: 8,
   },
   quickStatusButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    borderRadius: isSmallDevice ? 16 : 20,
     borderWidth: 2,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  quickStatusButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   quickStatusIcon: {
-    fontSize: 16,
+    marginRight: isSmallDevice ? 4 : 6,
+  },
+  quickStatusText: {
+    fontWeight: '600',
   },
 
-  // Action Buttons
-  actionButtons: {
-    marginLeft: 12,
-    gap: 8,
+  // Action Buttons - Responsive positioning
+  actionButtonsVertical: {
+    marginLeft: 8,
+    flexDirection: 'column',
+    gap: 6,
+    alignSelf: 'flex-start',
+  },
+  actionButtonsHorizontal: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   editButton: {
     width: 40,
@@ -442,35 +598,32 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 
-  // Empty State
+  // Empty State - Responsive
   emptyStateContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 40,
+    paddingHorizontal: isSmallDevice ? 24 : 40,
   },
   emptyStateIcon: {
-    fontSize: 64,
-    marginBottom: 20,
+    marginBottom: isSmallDevice ? 16 : 20,
   },
   emptyStateTitle: {
-    fontSize: 24,
     fontWeight: '700',
     color: '#2c3e50',
     marginBottom: 12,
     textAlign: 'center',
   },
   emptyStateSubtitle: {
-    fontSize: 16,
     color: '#6c757d',
     textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 32,
+    lineHeight: isSmallDevice ? 20 : 24,
+    marginBottom: isSmallDevice ? 24 : 32,
   },
   emptyStateButton: {
     backgroundColor: '#4ECDC4',
-    paddingVertical: 16,
-    paddingHorizontal: 32,
+    paddingVertical: isSmallDevice ? 12 : 16,
+    paddingHorizontal: isSmallDevice ? 24 : 32,
     borderRadius: 25,
     shadowColor: '#4ECDC4',
     shadowOffset: { width: 0, height: 4 },
@@ -480,7 +633,7 @@ const styles = StyleSheet.create({
   },
   emptyStateButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: isSmallDevice ? 14 : 16,
     fontWeight: '600',
   },
 });

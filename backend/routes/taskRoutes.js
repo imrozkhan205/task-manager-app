@@ -7,8 +7,11 @@ import {
   deleteTask,
   toggleTask,
 } from '../controllers/taskController.js';
+import { requireAuth } from '../middleware/authMiddleware.js';
 
 const router = Router();
+
+router.use(requireAuth)
 
 router.get('/', getTasks);
 router.get('/:id', getTask);

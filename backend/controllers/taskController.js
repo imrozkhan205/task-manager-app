@@ -1,17 +1,19 @@
 import Task from '../models/Task.js';
 
+// Get all tasks for the logged-in user
 export const getTasks = async (req, res) => {
   try {
-    const tasks = await Task.find().sort({ createdAt: -1 });
+    const tasks = await Task.find({ userId: req.userId }).sort({ createdAt: -1 });
     res.json(tasks);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
+// Get a single task (only if it belongs to the logged-in user)
 export const getTask = async (req, res) => {
   try {
-    const task = await Task.findById(req.params.id);
+    const task = await Task.findOne({ _id: req.params.id, userId: req.userId });
     if (!task) return res.status(404).json({ message: 'Task not found' });
     res.json(task);
   } catch (error) {
@@ -19,6 +21,7 @@ export const getTask = async (req, res) => {
   }
 };
 
+// Create a task for the logged-in user
 export const createTask = async (req, res) => {
   try {
     const task = new Task({
@@ -26,6 +29,7 @@ export const createTask = async (req, res) => {
       description: req.body.description,
       priority: req.body.priority,
       dueDate: req.body.dueDate,
+      userId: req.userId, // attach the user ID
     });
     const newTask = await task.save();
     res.status(201).json(newTask);
@@ -34,12 +38,14 @@ export const createTask = async (req, res) => {
   }
 };
 
+// Update a task (only if it belongs to the logged-in user)
 export const updateTask = async (req, res) => {
   try {
-    const task = await Task.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const task = await Task.findOneAndUpdate(
+      { _id: req.params.id, userId: req.userId },
+      req.body,
+      { new: true, runValidators: true }
+    );
     if (!task) return res.status(404).json({ message: 'Task not found' });
     res.json(task);
   } catch (error) {
@@ -47,9 +53,10 @@ export const updateTask = async (req, res) => {
   }
 };
 
+// Delete a task (only if it belongs to the logged-in user)
 export const deleteTask = async (req, res) => {
   try {
-    const task = await Task.findByIdAndDelete(req.params.id);
+    const task = await Task.findOneAndDelete({ _id: req.params.id, userId: req.userId });
     if (!task) return res.status(404).json({ message: 'Task not found' });
     res.json({ message: 'Task deleted successfully' });
   } catch (error) {
@@ -57,9 +64,10 @@ export const deleteTask = async (req, res) => {
   }
 };
 
+// Toggle task completion (only if it belongs to the logged-in user)
 export const toggleTask = async (req, res) => {
   try {
-    const task = await Task.findById(req.params.id);
+    const task = await Task.findOne({ _id: req.params.id, userId: req.userId });
     if (!task) return res.status(404).json({ message: 'Task not found' });
     task.completed = !task.completed;
     const updatedTask = await task.save();
@@ -68,5 +76,3 @@ export const toggleTask = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
-

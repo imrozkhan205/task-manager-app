@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
 const signToken = (userId) => {
-  const secret = process.env.JWT_SECRET || 'changeme';
+  const secret = process.env.JWT_SECRET;
   return jwt.sign({ sub: userId }, secret, { expiresIn: '7d' });
 };
 

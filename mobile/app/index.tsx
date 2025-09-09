@@ -15,7 +15,7 @@ import {
 import { taskAPI, Task } from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
 import { useRouter, useFocusEffect } from "expo-router";
-
+import { TaskCard } from '../components/TaskCard'
 // Get screen dimensions
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -56,6 +56,8 @@ const AuthenticatedHeader = () => {
       ]
     );
   };
+
+  
 
   // Close menu when tapping outside
   const closeMenu = () => {
@@ -117,6 +119,19 @@ export default function Index() {
     screenWidth > screenHeight ? 'landscape' : 'portrait'
   );
   const router = useRouter();
+  const getPriorityInfo = (priority: 'low' | 'medium' | 'high') => {
+    switch(priority) {
+      case 'low':
+        return { label: 'LOW', color: '#2ecc71' }; // green
+      case 'medium':
+        return { label: 'MEDIUM', color: '#f1c40f' }; // yellow
+      case 'high':
+        return { label: 'HIGH', color: '#e74c3c' }; // red
+      default:
+        return { label: 'MEDIUM', color: '#f1c40f' };
+    }
+  };
+  
 
   // Update orientation on dimension changes
   const updateOrientation = () => {
@@ -312,7 +327,20 @@ export default function Index() {
                   flexDirection: orientation === 'landscape' && isLargeDevice ? 'row' : 'column',
                 }
               ]}>
-                
+<View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 3, marginBottom:6 }}>
+  <Text style={{ fontWeight: '600', color: '#555', marginRight: 8 }}>Priority:</Text>
+  <View style={{
+    backgroundColor: getPriorityInfo(item.priority).color,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12
+  }}>
+    <Text style={{ color: '#fff', fontWeight: '700', fontSize: 10 }}>
+      {getPriorityInfo(item.priority).label}
+    </Text>
+  </View>
+</View>
+
                 {/* Top Section: Status Badge + Task Content */}
                 <View style={[
                   styles.taskMainContent,

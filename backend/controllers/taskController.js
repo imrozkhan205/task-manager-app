@@ -24,6 +24,8 @@ export const getTask = async (req, res) => {
 // Create a task for the logged-in user
 export const createTask = async (req, res) => {
   try {
+    console.log("👤 req.userId in createTask:", req.userId);
+
     const task = new Task({
       title: req.body.title,
       description: req.body.description,

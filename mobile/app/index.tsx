@@ -13,6 +13,7 @@ import {
   Platform,
 } from "react-native";
 import { taskAPI, Task } from "../services/api";
+import { useAuth } from "../contexts/AuthContext";
 import { useRouter, useFocusEffect } from "expo-router";
 
 // Get screen dimensions
@@ -25,9 +26,89 @@ const isLargeDevice = screenWidth >= 414;
 
 // Enhanced Task type with status field
 interface EnhancedTask extends Omit<Task, 'completed'> {
-  status: 'pending' | 'progress' | 'done';
+  status: 'pending' | 'in-progress' | 'done';
   completed?: boolean; // Keep for backward compatibility
 }
+
+// Authentication Header Component
+const AuthenticatedHeader = () => {
+  const { user, logout } = useAuth();
+  const [showUserMenu, setShowUserMenu] = useState(false);
+
+  const handleLogout = async () => {
+    setShowUserMenu(false); // Close menu first
+    Alert.alert(
+      "Logout", 
+      "Are you sure you want to logout?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Logout", 
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await logout();
+            } catch (error) {
+              console.error('Logout failed:', error);
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  // Close menu when tapping outside
+  const closeMenu = () => {
+    if (showUserMenu) {
+      setShowUserMenu(false);
+    }
+  };
+
+  return (
+    <>
+      <View style={headerStyles.container}>
+        <View style={headerStyles.content}>
+          <View>
+            <Text style={headerStyles.title}>Task Manager</Text>
+            <Text style={headerStyles.subtitle}>Welcome back, {user?.name}!</Text>
+          </View>
+          
+          <TouchableOpacity 
+            style={headerStyles.userButton}
+            onPress={() => setShowUserMenu(!showUserMenu)}
+          >
+            <Text style={headerStyles.userIcon}>👤</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+      
+      {/* Overlay to close dropdown */}
+      {showUserMenu && (
+        <TouchableOpacity 
+          style={headerStyles.overlay}
+          activeOpacity={1}
+          onPress={closeMenu}
+        >
+          <View style={headerStyles.dropdown}>
+            <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+              <View style={headerStyles.userInfo}>
+                <Text style={headerStyles.userName}>{user?.name}</Text>
+                <Text style={headerStyles.userEmail}>{user?.email}</Text>
+              </View>
+              <TouchableOpacity 
+                style={headerStyles.logoutButton}
+                onPress={handleLogout}
+              >
+                <Text style={headerStyles.logoutIcon}>🚪</Text>
+                <Text style={headerStyles.logoutText}>Logout</Text>
+              </TouchableOpacity>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      )}
+    </>
+  );
+};
 
 export default function Index() {
   const [tasks, setTasks] = useState<EnhancedTask[]>([]);
@@ -60,14 +141,19 @@ export default function Index() {
     }
   };
 
-  const updateTaskStatus = async (id: string, newStatus: 'pending' | 'progress' | 'done') => {
+  // Fixed updateTaskStatus function with correct status mapping
+  const updateTaskStatus = async (id: string, newStatus: 'pending' | 'in-progress' | 'done') => {
     try {
       const task = tasks.find(t => t._id === id);
       if (!task) return;
 
       // Update local state
       setTasks(prev =>
-        prev.map(t => t._id === id ? { ...t, status: newStatus } : t)
+        prev.map(t =>
+          t._id === id
+            ? { ...t, status: newStatus }
+            : t
+        )
       );
 
       // Toggle backend only if switching between done/pending
@@ -98,11 +184,12 @@ export default function Index() {
     ]);
   };
 
-  const getStatusInfo = (status: 'pending' | 'progress' | 'done') => {
+  // Fixed getStatusInfo function with consistent status values
+  const getStatusInfo = (status: 'pending' | 'in-progress' | 'done') => {
     switch (status) {
       case 'pending':
         return { icon: '⏳', label: 'Pending', color: '#FF6B6B', bgColor: '#FFE8E8' };
-      case 'progress':
+      case 'in-progress':
         return { icon: '🔄', label: 'In Progress', color: '#4ECDC4', bgColor: '#E8F9F8' };
       case 'done':
         return { icon: '✅', label: 'Done', color: '#45B7D1', bgColor: '#E8F4FD' };
@@ -158,6 +245,9 @@ export default function Index() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#f8f9fa" />
 
+      {/* Authentication Header */}
+      <AuthenticatedHeader />
+
       {/* Header Stats - Responsive Grid */}
       <View style={[styles.statsContainer, { 
         flexDirection: orientation === 'landscape' ? 'row' : 'row',
@@ -171,7 +261,7 @@ export default function Index() {
         </View>
         <View style={[styles.statCard, { width: statCardWidth }]}>
           <Text style={[styles.statNumber, { fontSize: isSmallDevice ? 20 : 24 }]}>
-            {tasks.filter(t => t.status === 'progress').length}
+            {tasks.filter(t => t.status === 'in-progress').length}
           </Text>
           <Text style={[styles.statLabel, { fontSize: isSmallDevice ? 10 : 12 }]}>In Progress</Text>
         </View>
@@ -316,7 +406,7 @@ export default function Index() {
                       marginTop: 12,
                     }
                   ]}>
-                    {(['pending', 'progress', 'done'] as const).map((status) => {
+                    {(['pending', 'in-progress', 'done'] as const).map((status) => {
                       const info = getStatusInfo(status);
                       const isCurrentStatus = item.status === status;
                       return (
@@ -382,6 +472,108 @@ export default function Index() {
   );
 }
 
+// Header Styles for Authentication
+const headerStyles = StyleSheet.create({
+  container: {
+    backgroundColor: '#fff',
+    paddingTop: 20,
+    paddingBottom: 16,
+    paddingHorizontal: isSmallDevice ? 20 : 32,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e9ecef',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'transparent',
+    zIndex: 999, // sits below dropdown but above content
+  },
+  
+  dropdown: {
+    position: 'absolute',
+    top: 70, // adjust so it sits below header
+    right: isSmallDevice ? 20 : 32,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    minWidth: 200,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 10,
+    zIndex: 1000, // higher than overlay
+  },
+  
+  content: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: isSmallDevice ? 20 : 24,
+    fontWeight: '800',
+    color: '#2c3e50',
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontSize: isSmallDevice ? 14 : 16,
+    color: '#6c757d',
+    fontWeight: '500',
+  },
+  userButton: {
+    width: isSmallDevice ? 40 : 44,
+    height: isSmallDevice ? 40 : 44,
+    borderRadius: isSmallDevice ? 20 : 22,
+    backgroundColor: '#4ECDC4',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  userIcon: {
+    fontSize: isSmallDevice ? 18 : 20,
+    color: '#fff',
+  },
+  userInfo: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#e9ecef',
+    paddingBottom: 12,
+    marginBottom: 12,
+  },
+  userName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2c3e50',
+    marginBottom: 4,
+  },
+  userEmail: {
+    fontSize: 14,
+    color: '#6c757d',
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  logoutIcon: {
+    fontSize: 16,
+    marginRight: 8,
+  },
+  logoutText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#e74c3c',
+  },
+});
+
+// Main Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -401,34 +593,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#6c757d",
     fontWeight: "500",
-  },
-
-  // Custom Header Styles
-  headerContainer: {
-    paddingTop: 20,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e9ecef',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  headerTitle: {
-    fontWeight: '800',
-    color: '#2c3e50',
-    textAlign: 'center',
-    marginBottom: 6,
-    letterSpacing: -0.5,
-  },
-  headerSubtitle: {
-    color: '#6c757d',
-    textAlign: 'center',
-    fontWeight: '500',
-    opacity: 0.8,
   },
 
   // Stats Section (Header) - Responsive

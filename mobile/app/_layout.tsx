@@ -1,26 +1,20 @@
-import { Stack } from "expo-router";
+// app/_layout.tsx
+import { Stack } from 'expo-router';
+import { AuthProvider } from '../contexts/AuthContext';
+import AuthGuard from '../components/AuthGuard';
 
 export default function RootLayout() {
   return (
-    <Stack>
-      <Stack.Screen
-        name="index"
-        options={{
-          headerShown: false, // IMPORTANT: This must be false
-        }}
-      />
-      <Stack.Screen
-        name="add-task"
-        options={{
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
-        name="edit-task"
-        options={{
-          headerShown: false,
-        }}
-      />
-    </Stack>
+    <AuthProvider>
+      <AuthGuard>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="login" />
+          <Stack.Screen name="signup" />
+          <Stack.Screen name="add-task" />
+          <Stack.Screen name="edit-task" />
+        </Stack>
+      </AuthGuard>
+    </AuthProvider>
   );
 }

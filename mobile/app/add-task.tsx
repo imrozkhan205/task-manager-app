@@ -13,6 +13,7 @@ import {
 import { router } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import axios from "axios";
+import { taskAPI } from "@/services/api";
 
 export default function AddTask() {
   const [title, setTitle] = useState("");
@@ -26,21 +27,20 @@ export default function AddTask() {
       Alert.alert("Validation", "Task title is required");
       return;
     }
-
+  
     setLoading(true);
     try {
-      const res = await axios.post("https://task-manager-app-f4dm.onrender.com/api/tasks", {
+      await taskAPI.createTask({
         title,
         description,
-        dueDate: dueDate ? dueDate.toISOString() : null,
+        dueDate: dueDate ? dueDate.toISOString() : undefined,
       });
       Alert.alert("✅ Success", "Task created successfully", [
-        { text: "OK", onPress: () => router.back() }
+        { text: "OK", onPress: () => router.back() },
       ]);
       setTitle("");
       setDescription("");
       setDueDate(null);
-    //   console.log("Created task:", res.data);
     } catch (err: any) {
       console.error("❌ Failed to create task:", err.response?.data || err.message);
       Alert.alert("Error", "Failed to create task");
@@ -48,6 +48,7 @@ export default function AddTask() {
       setLoading(false);
     }
   };
+  
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#f8f9fa" }}>

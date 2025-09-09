@@ -26,7 +26,7 @@ const isLargeDevice = screenWidth >= 414;
 
 // Enhanced Task type with status field
 interface EnhancedTask extends Omit<Task, 'completed'> {
-  status: 'pending' | 'in-progress' | 'done';
+  status: 'pending' | 'in progress' | 'done';
   completed?: boolean; // Keep for backward compatibility
 }
 
@@ -127,13 +127,11 @@ export default function Index() {
   const fetchTasks = async () => {
     try {
       const data = await taskAPI.getTasks();
-      setTasks(prevTasks => data.map((task: Task) => {
-        const existing = prevTasks.find(t => t._id === task._id);
-        return {
-          ...task,
-          status: existing ? existing.status : (task.completed ? 'done' : 'pending')
-        };
-      }));
+      setTasks(data.map((task: Task) => ({
+        ...task,
+        status: task.status || (task.completed ? 'done' : 'pending'),
+      })));
+      
     } catch (err) {
       console.error("❌ Failed to fetch tasks:", err);
     } finally {
@@ -142,29 +140,31 @@ export default function Index() {
   };
 
   // Fixed updateTaskStatus function with correct status mapping
-  const updateTaskStatus = async (id: string, newStatus: 'pending' | 'in-progress' | 'done') => {
+  const updateTaskStatus = async (id: string, newStatus: "pending" | "in progress" | "done") => {
     try {
       const task = tasks.find(t => t._id === id);
       if (!task) return;
 
-      // Update local state
+      // Map "in progress" to "in-progress" for local state, but keep API payload as is
+      const mappedStatus = newStatus === "in progress" ? "in progress" : newStatus;
+
+      // Update local state immediately
       setTasks(prev =>
         prev.map(t =>
           t._id === id
-            ? { ...t, status: newStatus }
+            ? { ...t, status: mappedStatus }
             : t
         )
       );
-
-      // Toggle backend only if switching between done/pending
-      if ((newStatus === 'done') !== task.completed) {
-        await taskAPI.toggleTask(id);
-      }
+  
+      // Update backend
+      await taskAPI.updateTask(id, { status: newStatus });
     } catch (err) {
       console.error("❌ Failed to update task status:", err);
-      fetchTasks();
+      fetchTasks(); // refresh to avoid stale state
     }
   };
+  
 
   const deleteTask = async (id: string) => {
     Alert.alert("Delete Task", "Are you sure you want to delete this task?", [
@@ -185,11 +185,11 @@ export default function Index() {
   };
 
   // Fixed getStatusInfo function with consistent status values
-  const getStatusInfo = (status: 'pending' | 'in-progress' | 'done') => {
+  const getStatusInfo = (status: 'pending' | 'in progress' | 'done') => {
     switch (status) {
       case 'pending':
         return { icon: '⏳', label: 'Pending', color: '#FF6B6B', bgColor: '#FFE8E8' };
-      case 'in-progress':
+      case 'in progress':
         return { icon: '🔄', label: 'In Progress', color: '#4ECDC4', bgColor: '#E8F9F8' };
       case 'done':
         return { icon: '✅', label: 'Done', color: '#45B7D1', bgColor: '#E8F4FD' };
@@ -261,7 +261,7 @@ export default function Index() {
         </View>
         <View style={[styles.statCard, { width: statCardWidth }]}>
           <Text style={[styles.statNumber, { fontSize: isSmallDevice ? 20 : 24 }]}>
-            {tasks.filter(t => t.status === 'in-progress').length}
+            {tasks.filter(t => t.status === 'in progress').length}
           </Text>
           <Text style={[styles.statLabel, { fontSize: isSmallDevice ? 10 : 12 }]}>In Progress</Text>
         </View>
@@ -406,7 +406,7 @@ export default function Index() {
                       marginTop: 12,
                     }
                   ]}>
-                    {(['pending', 'in-progress', 'done'] as const).map((status) => {
+                    {(['pending', 'in progress', 'done'] as const).map((status) => {
                       const info = getStatusInfo(status);
                       const isCurrentStatus = item.status === status;
                       return (

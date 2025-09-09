@@ -21,6 +21,7 @@ export default function EditTask() {
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
   const [dueDate, setDueDate] = useState<Date | null>(null);
+  const [taskStatus, setTaskStatus] = useState<"pending" | "in progress" | "done">("pending");
   const [loading, setLoading] = useState(true);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
@@ -35,6 +36,7 @@ export default function EditTask() {
           setDescription(found.description || "");
           setPriority(found.priority || "medium");
           setDueDate(found.dueDate ? new Date(found.dueDate) : null);
+          setTaskStatus(found.status || "pending"); // ✅ load status from backend
         }
       } catch (err) {
         console.error("❌ Failed to fetch task:", err);
@@ -58,7 +60,9 @@ export default function EditTask() {
         description,
         priority,
         dueDate: dueDate ? dueDate.toISOString() : undefined,
+        status: taskStatus, // ✅ now properly defined
       });
+      
       Alert.alert("✅ Success", "Task updated successfully!");
       router.back();
     } catch (err) {
@@ -154,6 +158,31 @@ export default function EditTask() {
               }}
             >
               {p.toUpperCase()}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Status Selector */}
+      <View style={{ flexDirection: "row", marginBottom: 12, gap: 10 }}>
+        {["pending", "in progress", "done"].map((s) => (
+          <TouchableOpacity
+            key={s}
+            style={{
+              flex: 1,
+              padding: 10,
+              borderRadius: 8,
+              backgroundColor: taskStatus === s ? "#28A745" : "#ddd",
+            }}
+            onPress={() => setTaskStatus(s as "pending" | "in progress" | "done")}
+          >
+            <Text
+              style={{
+                textAlign: "center",
+                color: taskStatus === s ? "#fff" : "#000",
+              }}
+            >
+              {s.toUpperCase()}
             </Text>
           </TouchableOpacity>
         ))}

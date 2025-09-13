@@ -47,7 +47,7 @@ export default function PrivacyPolicy() {
         <Text style={styles.sectionTitle}>📞 Contact Us</Text>
         <Text style={styles.paragraph}>
           If you have any questions or requests (including deleting your data),
-          contact us at: your-email@example.com
+          contact us at: imrozkhan2258@gmail.com
         </Text>
       </ScrollView>
     </SafeAreaView>

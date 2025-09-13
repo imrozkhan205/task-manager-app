@@ -15,7 +15,9 @@ import {
 import { taskAPI, Task } from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
 import { useRouter, useFocusEffect, router } from "expo-router";
+import { BlurView } from "expo-blur";
 // import { TaskCard } from '../components/TaskCard'
+
 // Get screen dimensions
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -38,12 +40,12 @@ const AuthenticatedHeader = () => {
   const handleLogout = async () => {
     setShowUserMenu(false); // Close menu first
     Alert.alert(
-      "Logout", 
+      "Logout",
       "Are you sure you want to logout?",
       [
         { text: "Cancel", style: "cancel" },
-        { 
-          text: "Logout", 
+        {
+          text: "Logout",
           style: "destructive",
           onPress: async () => {
             try {
@@ -56,8 +58,6 @@ const AuthenticatedHeader = () => {
       ]
     );
   };
-
-  
 
   // Close menu when tapping outside
   const closeMenu = () => {
@@ -74,8 +74,8 @@ const AuthenticatedHeader = () => {
             <Text style={headerStyles.title}>Task Manager</Text>
             <Text style={headerStyles.subtitle}>Welcome back, {user?.name}!</Text>
           </View>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={headerStyles.userButton}
             onPress={() => setShowUserMenu(!showUserMenu)}
           >
@@ -83,10 +83,10 @@ const AuthenticatedHeader = () => {
           </TouchableOpacity>
         </View>
       </View>
-      
+
       {/* Overlay to close dropdown */}
       {showUserMenu && (
-        <TouchableOpacity 
+        <TouchableOpacity
           style={headerStyles.overlay}
           activeOpacity={1}
           onPress={closeMenu}
@@ -97,7 +97,7 @@ const AuthenticatedHeader = () => {
                 <Text style={headerStyles.userName}>{user?.name}</Text>
                 <Text style={headerStyles.userEmail}>{user?.email}</Text>
               </View>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={headerStyles.logoutButton}
                 onPress={handleLogout}
               >
@@ -106,14 +106,13 @@ const AuthenticatedHeader = () => {
               </TouchableOpacity>
             </TouchableOpacity>
             <TouchableOpacity style={headerStyles.privacyButton}
-            onPress={() => {
-              setShowUserMenu(false);
-              router.push("/privacy-policy");
-            }}
+              onPress={() => {
+                setShowUserMenu(false);
+                router.push("/privacy-policy");
+              }}
             >
               <Text style={headerStyles.privacyIcon}>📜</Text>
               <Text style={headerStyles.privacyText}>Privacy Policy</Text>
-
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
@@ -129,19 +128,19 @@ export default function Index() {
     screenWidth > screenHeight ? 'landscape' : 'portrait'
   );
   const router = useRouter();
+
   const getPriorityInfo = (priority: 'low' | 'medium' | 'high') => {
     switch(priority) {
       case 'low':
-        return { label: 'LOW', color: '#2ecc71' }; // green
+        return { label: '⏳ LOW', color: '#2ecc71' }; // green
       case 'medium':
-        return { label: 'MEDIUM', color: '#f1c40f' }; // yellow
+        return { label: '🔖 MEDIUM', color: '#f1c40f' }; // yellow
       case 'high':
-        return { label: 'HIGH', color: '#e74c3c' }; // red
+        return { label: '🚩 HIGH', color: '#e74c3c' }; // red
       default:
-        return { label: 'MEDIUM', color: '#f1c40f' };
+        return { label: '🔖 MEDIUM', color: '#f1c40f' };
     }
   };
-  
 
   // Update orientation on dimension changes
   const updateOrientation = () => {
@@ -156,7 +155,7 @@ export default function Index() {
         ...task,
         status: task.status || (task.completed ? 'done' : 'pending'),
       })));
-      
+
     } catch (err) {
       console.error("❌ Failed to fetch tasks:", err);
     } finally {
@@ -181,7 +180,7 @@ export default function Index() {
             : t
         )
       );
-  
+
       // Update backend
       await taskAPI.updateTask(id, { status: newStatus });
     } catch (err) {
@@ -189,7 +188,6 @@ export default function Index() {
       fetchTasks(); // refresh to avoid stale state
     }
   };
-  
 
   const deleteTask = async (id: string) => {
     Alert.alert("Delete Task", "Are you sure you want to delete this task?", [
@@ -217,7 +215,7 @@ export default function Index() {
       case 'in progress':
         return { icon: '🔄', label: 'In Progress', color: '#4ECDC4', bgColor: '#E8F9F8' };
       case 'done':
-        return { icon: '✅', label: 'Done', color: '#45B7D1', bgColor: '#E8F4FD' };
+        return { icon: '✅', label: 'Done', color: '#45B7D1', bgColor: '#ADD8E6' };
       default:
         return { icon: '⏳', label: 'Pending', color: '#FF6B6B', bgColor: '#FFE8E8' };
     }
@@ -273,46 +271,7 @@ export default function Index() {
       {/* Authentication Header */}
       <AuthenticatedHeader />
 
-      {/* Header Stats - Responsive Grid */}
-      <View style={[styles.statsContainer, { 
-        flexDirection: orientation === 'landscape' ? 'row' : 'row',
-        paddingHorizontal: isSmallDevice ? 12 : 20,
-      }]}>
-        <View style={[styles.statCard, { width: statCardWidth }]}>
-          <Text style={[styles.statNumber, { fontSize: isSmallDevice ? 20 : 24 }]}>
-            {tasks.filter(t => t.status === 'pending').length}
-          </Text>
-          <Text style={[styles.statLabel, { fontSize: isSmallDevice ? 10 : 12 }]}>Pending</Text>
-        </View>
-        <View style={[styles.statCard, { width: statCardWidth }]}>
-          <Text style={[styles.statNumber, { fontSize: isSmallDevice ? 20 : 24 }]}>
-            {tasks.filter(t => t.status === 'in progress').length}
-          </Text>
-          <Text style={[styles.statLabel, { fontSize: isSmallDevice ? 10 : 12 }]}>In Progress</Text>
-        </View>
-        <View style={[styles.statCard, { width: statCardWidth }]}>
-          <Text style={[styles.statNumber, { fontSize: isSmallDevice ? 20 : 24 }]}>
-            {tasks.filter(t => t.status === 'done').length}
-          </Text>
-          <Text style={[styles.statLabel, { fontSize: isSmallDevice ? 10 : 12 }]}>Completed</Text>
-        </View>
-      </View>
-
-      {/* Add Task Button - Responsive */}
-      <TouchableOpacity
-        style={[styles.addTaskButton, { 
-          marginHorizontal: isSmallDevice ? 12 : 20,
-          paddingVertical: isSmallDevice ? 14 : 18,
-        }]}
-        onPress={() => router.push("/add-task")}
-      >
-        <View style={styles.addTaskButtonContent}>
-          <Text style={[styles.addTaskIcon, { fontSize: isSmallDevice ? 20 : 24 }]}>+</Text>
-          <Text style={[styles.addTaskButtonText, { fontSize: isSmallDevice ? 16 : 18 }]}>Add New Task</Text>
-        </View>
-      </TouchableOpacity>
-
-      {/* Task List - Responsive */}
+      {/* The main scrollable task list */}
       {tasks.length === 0 ? (
         renderEmptyState()
       ) : (
@@ -320,7 +279,8 @@ export default function Index() {
           data={tasks}
           keyExtractor={(item) => item._id}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ 
+          contentContainerStyle={{
+            paddingTop: 165, // Adjust this value to the height of your sticky header
             paddingBottom: 20,
             paddingHorizontal: isSmallDevice ? 12 : 20,
           }}
@@ -328,33 +288,33 @@ export default function Index() {
             const statusInfo = getStatusInfo(item.status);
             return (
               <View style={[
-                styles.taskCard, 
-                { 
+                styles.taskCard,
+                {
                   backgroundColor: statusInfo.bgColor,
-                  marginHorizontal: 0, // Remove margin since we're using contentContainerStyle
+                  marginHorizontal: 0,
                   marginBottom: isSmallDevice ? 12 : 16,
                   padding: isSmallDevice ? 16 : 20,
                   flexDirection: orientation === 'landscape' && isLargeDevice ? 'row' : 'column',
                 }
               ]}>
-<View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 3, marginBottom:6 }}>
-  <Text style={{ fontWeight: '600', color: '#555', marginRight: 8 }}>Priority:</Text>
-  <View style={{
-    backgroundColor: getPriorityInfo(item.priority).color,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12
-  }}>
-    <Text style={{ color: '#fff', fontWeight: '700', fontSize: 10 }}>
-      {getPriorityInfo(item.priority).label}
-    </Text>
-  </View>
-</View>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 3, marginBottom: 6 }}>
+                  <Text style={{ fontWeight: '600', color: '#555', marginRight: 8 }}>Priority:</Text>
+                  <View style={{
+                    backgroundColor: getPriorityInfo(item.priority).color,
+                    paddingHorizontal: 8,
+                    paddingVertical: 2,
+                    borderRadius: 12
+                  }}>
+                    <Text style={{ color: '#fff', fontWeight: '700', fontSize: 10 }}>
+                      {getPriorityInfo(item.priority).label}
+                    </Text>
+                  </View>
+                </View>
 
                 {/* Top Section: Status Badge + Task Content */}
                 <View style={[
                   styles.taskMainContent,
-                  { 
+                  {
                     flex: orientation === 'landscape' && isLargeDevice ? 1 : undefined,
                     marginRight: orientation === 'landscape' && isLargeDevice ? 16 : 0,
                   }
@@ -362,8 +322,8 @@ export default function Index() {
                   <View style={styles.taskHeader}>
                     {/* Status Badge */}
                     <View style={[
-                      styles.statusBadge, 
-                      { 
+                      styles.statusBadge,
+                      {
                         backgroundColor: statusInfo.color,
                         width: isSmallDevice ? 36 : 44,
                         height: isSmallDevice ? 36 : 44,
@@ -414,7 +374,7 @@ export default function Index() {
                     {orientation !== 'landscape' && (
                       <View style={styles.actionButtonsVertical}>
                         <TouchableOpacity
-                          style={[styles.editButton, { 
+                          style={[styles.editButton, {
                             width: isSmallDevice ? 32 : 40,
                             height: isSmallDevice ? 32 : 40,
                           }]}
@@ -423,7 +383,7 @@ export default function Index() {
                           <Text style={[styles.editButtonText, { fontSize: isSmallDevice ? 12 : 16 }]}>✏️</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                          style={[styles.deleteButton, { 
+                          style={[styles.deleteButton, {
                             width: isSmallDevice ? 32 : 40,
                             height: isSmallDevice ? 32 : 40,
                           }]}
@@ -438,7 +398,7 @@ export default function Index() {
                   {/* Quick Status Buttons - Responsive layout */}
                   <View style={[
                     styles.quickStatusButtons,
-                    { 
+                    {
                       flexWrap: 'wrap',
                       justifyContent: isSmallDevice ? 'flex-start' : 'flex-start',
                       marginTop: 12,
@@ -469,8 +429,8 @@ export default function Index() {
                               {info.icon}
                             </Text>
                             <Text style={[
-                              styles.quickStatusText, 
-                              { 
+                              styles.quickStatusText,
+                              {
                                 color: isCurrentStatus ? '#fff' : info.color,
                                 fontSize: isSmallDevice ? 10 : 12,
                               }
@@ -504,7 +464,58 @@ export default function Index() {
               </View>
             );
           }}
+          ListEmptyComponent={tasks.length === 0 ? renderEmptyState : null}
         />
+      )}
+
+      {/* This is the STICKY and BLURRED header section */}
+      {tasks.length > 0 && (
+        <View style={styles.stickyHeader}>
+          <BlurView
+            style={styles.blurContainer}
+            intensity={150}
+            tint="default"
+          >
+            {/* Header Stats */}
+            <View style={[styles.statsContainer, {
+              flexDirection: orientation === 'landscape' ? 'row' : 'row',
+              paddingHorizontal: isSmallDevice ? 12 : 20,
+            }]}>
+              <View style={[styles.statCard, { width: statCardWidth }]}>
+                <Text style={[styles.statNumber, { fontSize: isSmallDevice ? 20 : 24 }]}>
+                  {tasks.filter(t => t.status === 'pending').length}
+                </Text>
+                <Text style={[styles.statLabel, { fontSize: isSmallDevice ? 10 : 12 }]}>Pending</Text>
+              </View>
+              <View style={[styles.statCard, { width: statCardWidth }]}>
+                <Text style={[styles.statNumber, { fontSize: isSmallDevice ? 20 : 24 }]}>
+                  {tasks.filter(t => t.status === 'in progress').length}
+                </Text>
+                <Text style={[styles.statLabel, { fontSize: isSmallDevice ? 10 : 12 }]}>In Progress</Text>
+              </View>
+              <View style={[styles.statCard, { width: statCardWidth }]}>
+                <Text style={[styles.statNumber, { fontSize: isSmallDevice ? 20 : 24 }]}>
+                  {tasks.filter(t => t.status === 'done').length}
+                </Text>
+                <Text style={[styles.statLabel, { fontSize: isSmallDevice ? 10 : 12 }]}>Completed</Text>
+              </View>
+            </View>
+
+            {/* Add Task Button */}
+            <TouchableOpacity
+              style={[styles.addTaskButton, {
+                marginHorizontal: isSmallDevice ? 12 : 20,
+                paddingVertical: isSmallDevice ? 14 : 18,
+              }]}
+              onPress={() => router.push("/add-task")}
+            >
+              <View style={styles.addTaskButtonContent}>
+                <Text style={[styles.addTaskIcon, { fontSize: isSmallDevice ? 20 : 24 }]}>+</Text>
+                <Text style={[styles.addTaskButtonText, { fontSize: isSmallDevice ? 16 : 18 }]}>Add New Task</Text>
+              </View>
+            </TouchableOpacity>
+          </BlurView>
+        </View>
       )}
     </SafeAreaView>
   );
@@ -512,7 +523,6 @@ export default function Index() {
 
 // Header Styles for Authentication
 const headerStyles = StyleSheet.create({
-
   privacyButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -527,7 +537,6 @@ const headerStyles = StyleSheet.create({
     fontWeight: "600",
     color: "#2c3e50",
   },
-  
   container: {
     backgroundColor: '#fff',
     paddingTop: 20,
@@ -550,7 +559,6 @@ const headerStyles = StyleSheet.create({
     backgroundColor: 'transparent',
     zIndex: 999, // sits below dropdown but above content
   },
-  
   dropdown: {
     position: 'absolute',
     top: 70, // adjust so it sits below header
@@ -566,7 +574,6 @@ const headerStyles = StyleSheet.create({
     elevation: 10,
     zIndex: 1000, // higher than overlay
   },
-  
   content: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -647,6 +654,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#6c757d",
     fontWeight: "500",
+  },
+  // The new style for the sticky header
+  stickyHeader: {
+    position: 'absolute',
+    top: 75, // Adjust this value to sit below the main header
+    left: 0,
+    right: 0,
+    zIndex: 10,
+    paddingBottom: 20, // This helps with spacing from the bottom
+  },
+  blurContainer: {
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
   },
 
   // Stats Section (Header) - Responsive

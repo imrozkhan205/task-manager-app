@@ -14,6 +14,7 @@ import { router } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import axios from "axios";
 import { taskAPI } from "@/services/api";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export default function AddTask() {
   const [title, setTitle] = useState("");
@@ -21,19 +22,21 @@ export default function AddTask() {
   const [dueDate, setDueDate] = useState<Date | null>(null);
   const [showPicker, setShowPicker] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [priority, setPriority] = useState<"low" | "medium" | "high">("low");
 
   const handleAddTask = async () => {
     if (!title.trim()) {
       Alert.alert("Validation", "Task title is required");
       return;
     }
-  
+    
     setLoading(true);
     try {
       await taskAPI.createTask({
         title,
         description,
         dueDate: dueDate ? dueDate.toISOString() : undefined,
+        priority, // ✅ Adding the priority to the API call
       });
       Alert.alert("✅ Success", "Task created successfully", [
         { text: "OK", onPress: () => router.back() },
@@ -41,6 +44,7 @@ export default function AddTask() {
       setTitle("");
       setDescription("");
       setDueDate(null);
+      setPriority("low"); // ✅ Reset priority to a default value
     } catch (err: any) {
       console.error("❌ Failed to create task:", err.response?.data || err.message);
       Alert.alert("Error", "Failed to create task");
@@ -51,7 +55,11 @@ export default function AddTask() {
   
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#f8f9fa" }}>
+    <SafeAreaProvider>
+{/* <SafeAreaView style={{ flex: 1 }} edges={['top', 'right', 'bottom', 'left']}> */}
+
+
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#f8f9fa" }} >
       <StatusBar barStyle="dark-content" backgroundColor="#f8f9fa" />
       
       <ScrollView 
@@ -173,6 +181,43 @@ export default function AddTask() {
               }}
               placeholderTextColor="#6c757d"
             />
+          </View>
+
+          <View style={{marginBottom:40}}>
+            <Text style={{fontSize:16,
+            fontWeight: '600',
+            color: '#495057',
+            marginBottom: 12,
+
+            }}>
+              📈 Priority
+            </Text>
+              <View style={{flexDirection: "row", marginBottom: 12, gap: 10}}>
+                {["low","medium","high"].map((p) => (
+                  <TouchableOpacity
+                  key={p}
+                  style={{
+                    flex:1,
+                    padding:10,
+                    borderRadius: 8,
+                    backgroundColor: priority === p ? "#007AFF" : "#ddd"
+                  }}
+                  onPress={() => setPriority(p as "low" | "medium" | "high")}
+                  >
+                    <Text 
+                    style={{
+                      textAlign: "center",
+                      padding: 6,
+                      color: priority === p ? "#fff" : "#000"
+                    }} 
+                    >
+                      {p.toUpperCase()}
+                    </Text>
+
+                  </TouchableOpacity>
+                ))}
+
+              </View>
           </View>
 
           {/* Due Date Section */}
@@ -303,5 +348,6 @@ export default function AddTask() {
         </View>
       </ScrollView>
     </SafeAreaView>
+    </SafeAreaProvider>
   );
 }

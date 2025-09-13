@@ -94,14 +94,14 @@ export default function EditTask() {
         onPress={() => router.back()}
         style={{
           marginBottom: 20,
-          paddingVertical: 6,
-          paddingHorizontal: 12,
-          backgroundColor: "#ddd",
+          paddingVertical: 2,
+          paddingHorizontal: 2,
+          // backgroundColor: "#ddd",
           borderRadius: 6,
           alignSelf: "flex-start",
         }}
       >
-        <Text style={{ fontSize: 16, alignItems:"center" }}>← Back</Text>
+        <Text style={{ fontSize: 16, alignItems:"center", color:'#007AFF' }}>👈 Back</Text>
       </TouchableOpacity>
 
       <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 10 }}>
@@ -154,6 +154,8 @@ export default function EditTask() {
             <Text
               style={{
                 textAlign: "center",
+                fontSize:10,
+                padding:6,
                 color: priority === p ? "#fff" : "#000",
               }}
             >
@@ -179,6 +181,8 @@ export default function EditTask() {
             <Text
               style={{
                 textAlign: "center",
+                fontSize:10,
+                padding:6,
                 color: taskStatus === s ? "#fff" : "#000",
               }}
             >

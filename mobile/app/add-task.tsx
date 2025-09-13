@@ -86,7 +86,7 @@ export default function AddTask() {
               marginRight: 16,
             }}
           >
-            <Text style={{ fontSize: 18, color: '#495057' }}>←</Text>
+            <Text style={{ fontSize: 18, color: '#495057' }}>👈</Text>
           </TouchableOpacity>
           
           <Text style={{ 

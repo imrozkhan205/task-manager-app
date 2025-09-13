@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { taskAPI, Task } from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
-import { useRouter, useFocusEffect } from "expo-router";
+import { useRouter, useFocusEffect, router } from "expo-router";
 // import { TaskCard } from '../components/TaskCard'
 // Get screen dimensions
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
@@ -104,6 +104,16 @@ const AuthenticatedHeader = () => {
                 <Text style={headerStyles.logoutIcon}>🚪</Text>
                 <Text style={headerStyles.logoutText}>Logout</Text>
               </TouchableOpacity>
+            </TouchableOpacity>
+            <TouchableOpacity style={headerStyles.privacyButton}
+            onPress={() => {
+              setShowUserMenu(false);
+              router.push("/privacy-policy");
+            }}
+            >
+              <Text style={headerStyles.privacyIcon}>📜</Text>
+              <Text style={headerStyles.privacyText}>Privacy Policy</Text>
+
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
@@ -502,6 +512,22 @@ export default function Index() {
 
 // Header Styles for Authentication
 const headerStyles = StyleSheet.create({
+
+  privacyButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 8,
+  },
+  privacyIcon: {
+    fontSize: 16,
+    marginRight: 8,
+  },
+  privacyText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#2c3e50",
+  },
+  
   container: {
     backgroundColor: '#fff',
     paddingTop: 20,

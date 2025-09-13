@@ -15,7 +15,7 @@ import {
 import { taskAPI, Task } from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
 import { useRouter, useFocusEffect } from "expo-router";
-import { TaskCard } from '../components/TaskCard'
+// import { TaskCard } from '../components/TaskCard'
 // Get screen dimensions
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 

@@ -59,7 +59,7 @@ export default function AddTask() {
 {/* <SafeAreaView style={{ flex: 1 }} edges={['top', 'right', 'bottom', 'left']}> */}
 
 
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#f8f9fa" }} >
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#f8f9fa" }}  >
       <StatusBar barStyle="dark-content" backgroundColor="#f8f9fa" />
       
       <ScrollView 

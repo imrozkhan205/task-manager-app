@@ -256,6 +256,7 @@ export default function Index() {
           <ActivityIndicator size="large" color="#4ECDC4" />
           <Text style={styles.loadingText}>Loading your tasks...</Text>
         </View>
+        
       </SafeAreaView>
     );
   }
@@ -516,7 +517,9 @@ export default function Index() {
             </TouchableOpacity>
           </BlurView>
         </View>
+        
       )}
+      
     </SafeAreaView>
   );
 }

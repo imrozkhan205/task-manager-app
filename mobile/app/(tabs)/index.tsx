@@ -1,3 +1,7 @@
+// app/(tabs)/index.tsx
+// This is your existing index.tsx file - just move it to the (tabs) folder
+// The content remains exactly the same as your current implementation
+
 import { useState, useCallback } from "react";
 import {
   View,
@@ -12,11 +16,10 @@ import {
   Dimensions,
   Platform,
 } from "react-native";
-import { taskAPI, Task } from "../services/api";
-import { useAuth } from "../contexts/AuthContext";
+import { taskAPI, Task } from "@/services/api";
+import { useAuth } from "@/contexts/AuthContext";
 import { useRouter, useFocusEffect, router } from "expo-router";
 import { BlurView } from "expo-blur";
-// import { TaskCard } from '../components/TaskCard'
 
 // Get screen dimensions
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
@@ -121,7 +124,7 @@ const AuthenticatedHeader = () => {
   );
 };
 
-export default function Index() {
+export default function HomeTab() {
   const [tasks, setTasks] = useState<EnhancedTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [orientation, setOrientation] = useState(
@@ -169,7 +172,7 @@ export default function Index() {
       const task = tasks.find(t => t._id === id);
       if (!task) return;
 
-      // Map "in progress" to "in-progress" for local state, but keep API payload as is
+      // Map "in progress" to "in progress" for local state, but keep API payload as is
       const mappedStatus = newStatus === "in progress" ? "in progress" : newStatus;
 
       // Update local state immediately
@@ -256,7 +259,6 @@ export default function Index() {
           <ActivityIndicator size="large" color="#4ECDC4" />
           <Text style={styles.loadingText}>Loading your tasks...</Text>
         </View>
-        
       </SafeAreaView>
     );
   }
@@ -282,7 +284,7 @@ export default function Index() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
             paddingTop: 165, // Adjust this value to the height of your sticky header
-            paddingBottom: 20,
+            paddingBottom: 100, // Add extra bottom padding for tab bar
             paddingHorizontal: isSmallDevice ? 12 : 20,
           }}
           renderItem={({ item }) => {
@@ -517,9 +519,7 @@ export default function Index() {
             </TouchableOpacity>
           </BlurView>
         </View>
-        
       )}
-      
     </SafeAreaView>
   );
 }

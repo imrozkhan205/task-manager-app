@@ -1,11 +1,7 @@
+// app/(tabs)/_layout.tsx
 import { Tabs, router } from 'expo-router';
 import { Platform, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-
-// Custom Add Button Component (keep this as-is)
-// const AddButton = () => {
-//     // ... (Your existing AddButton component code)
-// };
 
 export default function TabLayout() {
   return (
@@ -41,6 +37,7 @@ export default function TabLayout() {
         },
       }}
     >
+      {/* Home Tab */}
       <Tabs.Screen
         name="index"
         options={{
@@ -50,6 +47,8 @@ export default function TabLayout() {
           ),
         }}
       />
+
+      {/* Calendar Tab (renamed from upcoming) */}
       <Tabs.Screen
         name="upcoming"
         options={{
@@ -59,7 +58,8 @@ export default function TabLayout() {
           ),
         }}
       />
-      {/* The key change is here */}
+
+      {/* Add Button (Center) */}
       <Tabs.Screen
         name="add"
         options={{
@@ -76,6 +76,8 @@ export default function TabLayout() {
           },
         }}
       />
+
+      {/* Search Tab */}
       <Tabs.Screen
         name="search"
         options={{
@@ -85,6 +87,8 @@ export default function TabLayout() {
           ),
         }}
       />
+
+      {/* Browse Tab */}
       <Tabs.Screen
         name="browse"
         options={{
@@ -98,6 +102,7 @@ export default function TabLayout() {
   );
 }
 
+// Custom Add Button Component
 const AddButton = () => {
   return (
     <View

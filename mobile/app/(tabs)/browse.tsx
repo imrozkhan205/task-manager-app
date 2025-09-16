@@ -1,4 +1,5 @@
 // app/(tabs)/browse.tsx
+
 import { useState, useCallback } from 'react';
 import {
   View,
@@ -63,7 +64,7 @@ export default function BrowseTab() {
           return statusOrder[a.status] - statusOrder[b.status];
         });
       case 'recent':
-        return [...tasks].sort((a, b) => 
+        return [...tasks].sort((a, b) =>
           new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime()
         );
       default:
@@ -77,7 +78,7 @@ export default function BrowseTab() {
     const inProgress = tasks.filter(t => t.status === 'in progress').length;
     const completed = tasks.filter(t => t.status === 'done').length;
     const highPriority = tasks.filter(t => t.priority === 'high').length;
-    const overdue = tasks.filter(t => 
+    const overdue = tasks.filter(t =>
       t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'done'
     ).length;
 
@@ -110,28 +111,11 @@ export default function BrowseTab() {
     }
   };
 
-  if (loading) {
+  // Header component for stats overview
+  const StatsHeader = () => {
+    const stats = getStatsData();
+    
     return (
-      <SafeAreaView style={styles.loadingContainer}>
-        <View style={styles.loadingContent}>
-          <ActivityIndicator size="large" color="#6366f1" />
-          <Text style={styles.loadingText}>Loading tasks...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  const stats = getStatsData();
-  const categorizedTasks = getTasksByCategory();
-
-  return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Browse</Text>
-        <Text style={styles.headerSubtitle}>Explore your tasks by category</Text>
-      </View>
-
-      {/* Stats Overview */}
       <View style={styles.statsSection}>
         <Text style={styles.sectionTitle}>Overview</Text>
         <View style={styles.statsGrid}>
@@ -161,89 +145,132 @@ export default function BrowseTab() {
           </View>
         </View>
       </View>
+    );
+  };
 
-      {/* Category Filters */}
-      <View style={styles.categorySection}>
-        <Text style={styles.sectionTitle}>Browse by</Text>
-        <View style={styles.categoryButtons}>
-          {(['all', 'priority', 'status', 'recent'] as CategoryType[]).map((category) => (
-            <TouchableOpacity
-              key={category}
-              style={[
-                styles.categoryButton,
-                selectedCategory === category && styles.activeCategoryButton
-              ]}
-              onPress={() => setSelectedCategory(category)}
-            >
-              <Text style={[
-                styles.categoryButtonText,
-                selectedCategory === category && styles.activeCategoryButtonText
-              ]}>
-                {category.charAt(0).toUpperCase() + category.slice(1)}
+  // Category filter component
+  const CategoryFilter = () => (
+    <View style={styles.categorySection}>
+      <Text style={styles.sectionTitle}>Browse by</Text>
+      <View style={styles.categoryButtons}>
+        {(['all', 'priority', 'status', 'recent'] as CategoryType[]).map((category) => (
+          <TouchableOpacity
+            key={category}
+            style={[
+              styles.categoryButton,
+              selectedCategory === category && styles.activeCategoryButton
+            ]}
+            onPress={() => setSelectedCategory(category)}
+          >
+            <Text style={[
+              styles.categoryButtonText,
+              selectedCategory === category && styles.activeCategoryButtonText
+            ]}>
+              {category.charAt(0).toUpperCase() + category.slice(1)}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
+  );
+
+  // Task item renderer
+  const renderTaskItem = ({ item }: { item: EnhancedTask }) => {
+    const statusInfo = getStatusInfo(item.status);
+    const priorityInfo = getPriorityInfo(item.priority);
+   
+    return (
+      <TouchableOpacity
+        style={[styles.taskCard, { backgroundColor: statusInfo.bgColor }]}
+        onPress={() => router.push({ pathname: "/edit-task", params: { id: item._id } })}
+      >
+        <View style={styles.taskHeader}>
+          <View style={[styles.statusBadge, { backgroundColor: statusInfo.color }]}>
+            <Text style={styles.statusIcon}>{statusInfo.icon}</Text>
+          </View>
+          <View style={styles.taskContent}>
+            <View style={styles.taskTitleRow}>
+              <Text style={styles.taskTitle}>{item.title}</Text>
+              <View style={[styles.priorityBadge, { backgroundColor: priorityInfo.color }]}>
+                <Text style={styles.priorityText}>{priorityInfo.label}</Text>
+              </View>
+            </View>
+            {item.description && (
+              <Text style={styles.taskDescription} numberOfLines={2}>
+                {item.description}
               </Text>
-            </TouchableOpacity>
-          ))}
+            )}
+            <View style={styles.taskMeta}>
+              <Text style={styles.statusText}>
+                {statusInfo.icon} {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+              </Text>
+              {item.dueDate && (
+                <Text style={styles.dueDateText}>
+                  📅 {new Date(item.dueDate).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric'
+                  })}
+                </Text>
+              )}
+            </View>
+          </View>
         </View>
+      </TouchableOpacity>
+    );
+  };
+
+  // Empty state component
+  const EmptyState = () => (
+    <View style={styles.emptyStateContainer}>
+      <Text style={styles.emptyStateIcon}>📋</Text>
+      <Text style={styles.emptyStateTitle}>No Tasks Found</Text>
+      <Text style={styles.emptyStateSubtitle}>
+        Create your first task to get started
+      </Text>
+    </View>
+  );
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.loadingContainer}>
+        <View style={styles.loadingContent}>
+          <ActivityIndicator size="large" color="#6366f1" />
+          <Text style={styles.loadingText}>Loading tasks...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const categorizedTasks = getTasksByCategory();
+
+  return (
+    <SafeAreaView style={styles.container}>
+      {/* Fixed Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Browse</Text>
+        <Text style={styles.headerSubtitle}>Explore your tasks by category</Text>
       </View>
 
-      {/* Tasks List */}
+      {/* Scrollable Content */}
       <FlatList
         data={categorizedTasks}
         keyExtractor={(item) => item._id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContainer}
-        renderItem={({ item }) => {
-          const statusInfo = getStatusInfo(item.status);
-          const priorityInfo = getPriorityInfo(item.priority);
-          
-          return (
-            <TouchableOpacity
-              style={[styles.taskCard, { backgroundColor: statusInfo.bgColor }]}
-              onPress={() => router.push({ pathname: "/edit-task", params: { id: item._id } })}
-            >
-              <View style={styles.taskHeader}>
-                <View style={[styles.statusBadge, { backgroundColor: statusInfo.color }]}>
-                  <Text style={styles.statusIcon}>{statusInfo.icon}</Text>
-                </View>
-                <View style={styles.taskContent}>
-                  <View style={styles.taskTitleRow}>
-                    <Text style={styles.taskTitle}>{item.title}</Text>
-                    <View style={[styles.priorityBadge, { backgroundColor: priorityInfo.color }]}>
-                      <Text style={styles.priorityText}>{priorityInfo.label}</Text>
-                    </View>
-                  </View>
-                  {item.description && (
-                    <Text style={styles.taskDescription} numberOfLines={2}>
-                      {item.description}
-                    </Text>
-                  )}
-                  <View style={styles.taskMeta}>
-                    <Text style={styles.statusText}>
-                      {statusInfo.icon} {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
-                    </Text>
-                    {item.dueDate && (
-                      <Text style={styles.dueDateText}>
-                        📅 {new Date(item.dueDate).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric'
-                        })}
-                      </Text>
-                    )}
-                  </View>
-                </View>
-              </View>
-            </TouchableOpacity>
-          );
-        }}
-        ListEmptyComponent={() => (
-          <View style={styles.emptyStateContainer}>
-            <Text style={styles.emptyStateIcon}>📋</Text>
-            <Text style={styles.emptyStateTitle}>No Tasks Found</Text>
-            <Text style={styles.emptyStateSubtitle}>
-              Create your first task to get started
-            </Text>
+        renderItem={renderTaskItem}
+        ListHeaderComponent={() => (
+          <View>
+            <StatsHeader />
+            <CategoryFilter />
           </View>
         )}
+        ListEmptyComponent={EmptyState}
+        // Add some bounce effect for better UX
+        bounces={true}
+        // Improve scroll performance
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={10}
+        windowSize={10}
       />
     </SafeAreaView>
   );
@@ -358,7 +385,7 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     paddingHorizontal: isSmallDevice ? 12 : 20,
-    paddingTop: 8,
+    paddingTop: 0, // Remove top padding since header handles it
     paddingBottom: 100, // Space for tab bar
   },
   taskCard: {

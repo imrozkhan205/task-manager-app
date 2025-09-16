@@ -329,12 +329,13 @@ const styles = StyleSheet.create({
     lineHeight: isSmallDevice ? 20 : 24,
   },
   resultsFooter: {
-    position: 'absolute',
-    bottom: 80, // Above tab bar
+    // position: 'center',
+    bottom: 120, // Above tab bar
     left: 0,
     right: 0,
     backgroundColor: 'rgba(99, 102, 241, 0.9)',
-    paddingVertical: 8,
+    paddingBottom:10,
+    paddingTop:10,
     paddingHorizontal: 16,
     alignItems: 'center',
   },

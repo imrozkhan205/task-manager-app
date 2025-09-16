@@ -1,16 +1,18 @@
-// app/(tabs)/_layout.tsx
-
-import { Tabs } from 'expo-router';
+import { Tabs, router } from 'expo-router';
 import { Platform, Text, View } from 'react-native';
-// 1. Import Ionicons component from the package
 import { Ionicons } from '@expo/vector-icons';
+
+// Custom Add Button Component (keep this as-is)
+// const AddButton = () => {
+//     // ... (Your existing AddButton component code)
+// };
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#6366f1', // Purple color like in the image
+        tabBarActiveTintColor: '#6366f1',
         tabBarInactiveTintColor: '#9ca3af',
         tabBarStyle: {
           backgroundColor: '#ffffff',
@@ -44,7 +46,6 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color, size }) => (
-            // 2. Use Ionicons directly, specifying the name and passing props
             <Ionicons name="home" size={size} color={color} />
           ),
         }}
@@ -58,14 +59,21 @@ export default function TabLayout() {
           ),
         }}
       />
+      {/* The key change is here */}
       <Tabs.Screen
         name="add"
         options={{
           title: '',
-          tabBarIcon: ({ color, size }) => (
-            <AddButton />
-          ),
+          tabBarIcon: ({ color, size }) => <AddButton />,
           tabBarLabel: () => null,
+        }}
+        listeners={{
+          tabPress: (e) => {
+            // Prevent the default action (which is to navigate to the "add" tab's route)
+            e.preventDefault();
+            // Manually push to the add-task route
+            router.push('/add-task');
+          },
         }}
       />
       <Tabs.Screen
@@ -90,7 +98,6 @@ export default function TabLayout() {
   );
 }
 
-// Custom Add Button Component
 const AddButton = () => {
   return (
     <View

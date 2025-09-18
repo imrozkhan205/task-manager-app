@@ -1,7 +1,7 @@
 import axios, { InternalAxiosRequestConfig } from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export const BASE_URL = "https://task-manager-app-f4dm.onrender.com/api";
+export const BASE_URL = "https://task-manager-mv55.onrender.com/api";
 
 export const api = axios.create({
   baseURL: BASE_URL,

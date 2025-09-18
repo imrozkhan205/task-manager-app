@@ -139,58 +139,84 @@ export default function EditTask() {
       />
 
       {/* Priority Selector */}
-      <View style={{ flexDirection: "row", marginBottom: 12, gap: 10 }}>
-        {["low", "medium", "high"].map((p) => (
-          <TouchableOpacity
-            key={p}
-            style={{
-              flex: 1,
-              padding: 10,
-              borderRadius: 8,
-              backgroundColor: priority === p ? "#007AFF" : "#ddd",
-            }}
-            onPress={() => setPriority(p as "low" | "medium" | "high")}
-          >
-            <Text
-              style={{
-                textAlign: "center",
-                fontSize:10,
-                padding:6,
-                color: priority === p ? "#fff" : "#000",
-              }}
-            >
-              {p.toUpperCase()}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+<View style={{ flexDirection: "row", marginBottom: 12, gap: 10 }}>
+  {["low", "medium", "high"].map((p) => {
+    let bgColor = "#ddd";
+    let textColor = "#000";
+
+    if (priority === p) {
+      if (p === "low") bgColor = "#28A745";   // Green
+      if (p === "medium") bgColor = "#FFC107"; // Yellow
+      if (p === "high") bgColor = "#DC3545";   // Red
+      textColor = "#fff";
+    }
+
+    return (
+      <TouchableOpacity
+        key={p}
+        style={{
+          flex: 1,
+          paddingVertical: 12,
+          borderRadius: 8,
+          backgroundColor: bgColor,
+          borderWidth: 1,
+          borderColor:"#ccc",
+        }}
+        onPress={() => setPriority(p as "low" | "medium" | "high")}
+      >
+        <Text
+          style={{
+            textAlign: "center",
+            fontSize: 13,
+            fontWeight: "500",
+            color: textColor,
+          }}
+        >
+          {p.toUpperCase()}
+        </Text>
+      </TouchableOpacity>
+    );
+  })}
+</View>
+
 
       {/* Status Selector */}
       <View style={{ flexDirection: "row", marginBottom: 12, gap: 10 }}>
-        {["pending", "in progress", "done"].map((s) => (
-          <TouchableOpacity
-            key={s}
-            style={{
-              flex: 1,
-              padding: 10,
-              borderRadius: 8,
-              backgroundColor: taskStatus === s ? "#28A745" : "#ddd",
-            }}
-            onPress={() => setTaskStatus(s as "pending" | "in progress" | "done")}
-          >
-            <Text
-              style={{
-                textAlign: "center",
-                fontSize:10,
-                padding:6,
-                color: taskStatus === s ? "#fff" : "#000",
-              }}
-            >
-              {s.toUpperCase()}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+  {[
+    { key: "pending", label: "Pending", activeColor: "#343A40" },   // Yellow
+    { key: "in progress", label: "In Progress", activeColor: "#0D6EFD" }, // Blue
+    { key: "done", label: "Done", activeColor: "#28A745" },         // Green
+  ].map((s) => {
+    const isActive = taskStatus === s.key;
+
+    return (
+      <TouchableOpacity
+        key={s.key}
+        style={{
+          flex: 1,
+          paddingVertical: 12,
+          borderRadius: 8,
+          backgroundColor: isActive ? s.activeColor : "#E9ECEF", // gray fallback
+          borderWidth: 1,
+          borderColor: isActive ? s.activeColor : "#ccc",
+        }}
+        onPress={() => setTaskStatus(s.key as "pending" | "in progress" | "done")}
+      >
+        <Text
+          style={{
+            textAlign: "center",
+            fontSize: 13,
+            fontWeight: "600",
+            color: isActive ? "#fff" : "#333",
+          }}
+        >
+          {s.label.toUpperCase()}
+        </Text>
+      </TouchableOpacity>
+    );
+  })}
+</View>
+
 
       {/* Due Date Picker */}
       <TouchableOpacity

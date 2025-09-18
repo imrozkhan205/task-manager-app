@@ -92,7 +92,7 @@ export default function BrowseTab() {
       case 'in progress':
         return { icon: '🔄', color: '#4ECDC4', bgColor: '#E8F9F8' };
       case 'done':
-        return { icon: '✅', color: '#45B7D1', bgColor: '#ADD8E6' };
+        return { icon: '✅', color: '#45B7D1', bgColor: '#9a9cf6' };
       default:
         return { icon: '⏳', color: '#FF6B6B', bgColor: '#FFE8E8' };
     }
@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
   },
   taskDescription: {
     fontSize: isSmallDevice ? 13 : 15,
-    color: '#6c757d',
+    color: '#1C1C1E',
     marginBottom: 12,
     lineHeight: isSmallDevice ? 18 : 22,
   },
@@ -453,12 +453,12 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: isSmallDevice ? 12 : 14,
-    color: '#7f8c8d',
+    color: '#1C1C1E',
     fontWeight: '500',
   },
   dueDateText: {
     fontSize: isSmallDevice ? 12 : 14,
-    color: '#7f8c8d',
+    color: '#1C1C1E',
     fontWeight: '500',
   },
   emptyStateContainer: {

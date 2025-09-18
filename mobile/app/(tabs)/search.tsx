@@ -79,7 +79,7 @@ export default function SearchTab() {
       case 'in progress':
         return { icon: '🔄', color: '#4ECDC4', bgColor: '#E8F9F8' };
       case 'done':
-        return { icon: '✅', color: '#45B7D1', bgColor: '#ADD8E6' };
+        return { icon: '✅', color: '#45B7D1', bgColor: '#9a9cf6' };
       default:
         return { icon: '⏳', color: '#FF6B6B', bgColor: '#FFE8E8' };
     }
@@ -296,14 +296,14 @@ const styles = StyleSheet.create({
   },
   taskDescription: {
     fontSize: isSmallDevice ? 13 : 15,
-    color: '#6c757d',
+    color: '#1C1C1E',
     marginBottom: 8,
     lineHeight: isSmallDevice ? 18 : 22,
   },
   dueDateText: {
     fontSize: isSmallDevice ? 12 : 14,
-    color: '#7f8c8d',
-    fontWeight: '500',
+    color: '#1C1C1E',
+    fontWeight: '400',
   },
   emptyStateContainer: {
     flex: 1,

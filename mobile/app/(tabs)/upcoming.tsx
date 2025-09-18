@@ -136,7 +136,7 @@ export default function CalendarTab() {
       case 'in progress':
         return { icon: '🔄', color: '#4ECDC4', bgColor: '#E8F9F8' };
       case 'done':
-        return { icon: '✅', color: '#45B7D1', bgColor: '#ADD8E6' };
+        return { icon: '✅', color: '#45B7D1', bgColor: '#9a9cf6' };
       default:
         return { icon: '⏳', color: '#FF6B6B', bgColor: '#FFE8E8' };
     }
@@ -267,7 +267,7 @@ export default function CalendarTab() {
             style={styles.navButton}
             onPress={() => navigateMonth('prev')}
           >
-            <Text style={styles.navButtonText}>‹</Text>
+            <Text style={styles.navButtonTextLeft}>‹</Text>
           </TouchableOpacity>
           
           <Text style={styles.monthTitle}>
@@ -278,7 +278,7 @@ export default function CalendarTab() {
             style={styles.navButton}
             onPress={() => navigateMonth('next')}
           >
-            <Text style={styles.navButtonText}>›</Text>
+            <Text style={styles.navButtonTextRight}>›</Text>
           </TouchableOpacity>
         </View>
 
@@ -426,10 +426,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  navButtonText: {
+  navButtonTextLeft: {
     fontSize: 20,
     color: '#fff',
     fontWeight: 'bold',
+    paddingRight:3,
+    paddingBottom:3
+  },
+  navButtonTextRight: {
+    fontSize: 20,
+    color: '#fff',
+    fontWeight: 'bold',
+    paddingLeft:1,
+    paddingBottom:3
   },
   monthTitle: {
     fontSize: isSmallDevice ? 18 : 22,
@@ -466,6 +475,7 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: '#e9ecef',
     position: 'relative',
+    paddingBottom:10
   },
   otherMonthDay: {
     backgroundColor: '#f8f9fa',
@@ -586,7 +596,7 @@ const styles = StyleSheet.create({
   },
   taskDescription: {
     fontSize: isSmallDevice ? 13 : 15,
-    color: '#6c757d',
+    color: '#1C1C1E',
     marginBottom: 12,
     lineHeight: isSmallDevice ? 18 : 22,
   },
@@ -597,12 +607,12 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: isSmallDevice ? 12 : 14,
-    color: '#7f8c8d',
+    color: '#1C1C1E',
     fontWeight: '500',
   },
   dueDateText: {
     fontSize: isSmallDevice ? 12 : 14,
-    color: '#7f8c8d',
+    color: '#1C1C1E',
     fontWeight: '500',
   },
   noTasksContainer: {

@@ -218,7 +218,7 @@ export default function HomeTab() {
       case 'in progress':
         return { icon: '🔄', label: 'In Progress', color: '#4ECDC4', bgColor: '#E8F9F8' };
       case 'done':
-        return { icon: '✅', label: 'Done', color: '#45B7D1', bgColor: '#ADD8E6' };
+        return { icon: '✅', label: 'Done', color: '#45B7D1', bgColor: '#9a9cf6' };
       default:
         return { icon: '⏳', label: 'Pending', color: '#FF6B6B', bgColor: '#FFE8E8' };
     }
@@ -765,10 +765,10 @@ const styles = StyleSheet.create({
   },
   completedTaskTitle: {
     textDecorationLine: 'line-through',
-    color: '#95a5a6',
+    color: '#2c3e50',
   },
   taskDescription: {
-    color: '#6c757d',
+    color: '#1C1C1E',
     lineHeight: isSmallDevice ? 18 : 22,
     marginBottom: 12,
   },
@@ -781,7 +781,7 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   dueDateText: {
-    color: '#7f8c8d',
+    color: '#1C1C1E',
     fontWeight: '500',
   },
   quickStatusButtons: {

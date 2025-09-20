@@ -1,10 +1,27 @@
 import Task from '../models/Task.js';
 
-// Get all tasks for the logged-in user
+// Get all tasks for the logged-in user (with pagination)
 export const getTasks = async (req, res) => {
   try {
-    const tasks = await Task.find({ userId: req.userId }).sort({ createdAt: -1 });
-    res.json(tasks);
+    const page = parseInt(req.query.page) || 1;     // default page = 1
+    const limit = parseInt(req.query.limit) || 4;   // default limit = 4
+    const skip = (page - 1) * limit;
+
+    // Fetch tasks only for the logged-in user
+    const tasks = await Task.find({ userId: req.userId })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    // Get total count for pagination info
+    const total = await Task.countDocuments({ userId: req.userId });
+
+    res.json({
+      tasks,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

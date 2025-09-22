@@ -6,11 +6,11 @@ import {
   Text,
   FlatList,
   TouchableOpacity,
-  SafeAreaView,
   StyleSheet,
   Dimensions,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { taskAPI, Task } from '../../services/api';
 
@@ -190,7 +190,9 @@ export default function BrowseTab() {
           </View>
           <View style={styles.taskContent}>
             <View style={styles.taskTitleRow}>
-              <Text style={styles.taskTitle}>{item.title}</Text>
+            <Text style={[styles.taskTitle, item.status === 
+                "done" && { textDecorationLine: 'line-through'}
+              ]}>{item.title}</Text>
               <View style={[styles.priorityBadge, { backgroundColor: priorityInfo.color }]}>
                 <Text style={styles.priorityText}>{priorityInfo.label}</Text>
               </View>
@@ -232,7 +234,7 @@ export default function BrowseTab() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.loadingContainer}>
+      <SafeAreaView style={styles.loadingContainer} edges={['top', 'left', 'right']}>
         <View style={styles.loadingContent}>
           <ActivityIndicator size="large" color="#6366f1" />
           <Text style={styles.loadingText}>Loading tasks...</Text>
@@ -244,7 +246,7 @@ export default function BrowseTab() {
   const categorizedTasks = getTasksByCategory();
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       {/* Fixed Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Browse</Text>

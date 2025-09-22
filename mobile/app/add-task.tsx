@@ -6,10 +6,10 @@ import {
   TouchableOpacity,
   Alert,
   Platform,
-  SafeAreaView,
   ScrollView,
   StatusBar,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import axios from "axios";
@@ -59,7 +59,7 @@ export default function AddTask() {
 {/* <SafeAreaView style={{ flex: 1 }} edges={['top', 'right', 'bottom', 'left']}> */}
 
 
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#f8f9fa" }}  >
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#f8f9fa" }} edges={['top', 'left', 'right']}  >
       <StatusBar barStyle="dark-content" backgroundColor="#f8f9fa" />
       
       <ScrollView 

@@ -6,10 +6,10 @@ import {
   TextInput,
   FlatList,
   TouchableOpacity,
-  SafeAreaView,
   StyleSheet,
   Dimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 import { taskAPI, Task } from '../../services/api';
 
@@ -103,7 +103,7 @@ export default function SearchTab() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Search Tasks</Text>
         <View style={styles.searchContainer}>
@@ -164,7 +164,9 @@ export default function SearchTab() {
                     <Text style={styles.statusIcon}>{statusInfo.icon}</Text>
                   </View>
                   <View style={styles.taskContent}>
-                    <Text style={styles.taskTitle}>{item.title}</Text>
+                  <Text style={[styles.taskTitle, item.status === 
+                "done" && { textDecorationLine: 'line-through'}
+              ]}>{item.title}</Text>
                     {item.description && (
                       <Text style={styles.taskDescription}>{item.description}</Text>
                     )}

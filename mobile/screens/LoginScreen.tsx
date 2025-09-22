@@ -6,7 +6,6 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   Alert,
   KeyboardAvoidingView,
@@ -14,7 +13,9 @@ import {
   ScrollView,
   Dimensions,
   ActivityIndicator,
+  Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -78,7 +79,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <StatusBar barStyle="dark-content" backgroundColor="#f8f9fa" />
       
       <KeyboardAvoidingView
@@ -98,6 +99,10 @@ export default function LoginScreen() {
             <Text style={[styles.welcomeSubtitle, { fontSize: isSmallDevice ? 16 : 18 }]}>
               Sign in to continue managing your tasks
             </Text>
+            <Image
+  source={require('../assets/images/tasks-LP.png')}
+  style={{ width: 200, height: 200, resizeMode: 'contain', alignSelf: 'center' }}
+/>
           </View>
 
           {/* Form Section */}

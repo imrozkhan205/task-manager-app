@@ -1,8 +1,6 @@
 // app/(tabs)/index.tsx
-// This is your existing index.tsx file - just move it to the (tabs) folder
-// The content remains exactly the same as your current implementation
-
 import { useState, useCallback } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   View,
   Text,
@@ -11,11 +9,11 @@ import {
   ActivityIndicator,
   Alert,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   Dimensions,
   Platform,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { taskAPI, Task } from "@/services/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter, useFocusEffect, router } from "expo-router";
@@ -34,7 +32,9 @@ interface EnhancedTask extends Omit<Task, 'completed'> {
   status: 'pending' | 'in progress' | 'done';
   completed?: boolean; // Keep for backward compatibility
 }
-
+interface StickyHeaderProps {
+  tasks: EnhancedTask[];
+}
 // Authentication Header Component
 const AuthenticatedHeader = () => {
   const { user, logout } = useAuth();
@@ -124,9 +124,82 @@ const AuthenticatedHeader = () => {
   );
 };
 
+// New component for the sticky header
+// Fixed StickyHeader component - replace your existing one
+const StickyHeader: React.FC<StickyHeaderProps> = ({ tasks }) => {
+  const insets = useSafeAreaInsets();
+  const router = useRouter();
+
+  // Calculate stats
+  const pendingCount = tasks.filter(t => t.status === 'pending').length;
+  const inProgressCount = tasks.filter(t => t.status === 'in progress').length;
+  const doneCount = tasks.filter(t => t.status === 'done').length;
+
+  // Responsive stats layout
+  const orientation = screenWidth > screenHeight ? 'landscape' : 'portrait';
+  const statsPerRow = orientation === 'landscape' ? 3 : (isSmallDevice ? 3 : 3);
+  const statCardWidth = (screenWidth - 40 - (statsPerRow - 1) * 12) / statsPerRow;
+
+  return (
+    <View style={styles.stickyHeader}>
+      <BlurView
+        style={styles.blurContainer}
+        intensity={80} // Reduced intensity for better stability
+        tint="light" // Changed from "default" to "light"
+      >
+        {/* Header Stats */}
+        <View style={[styles.statsContainer, {
+          flexDirection: orientation === 'landscape' ? 'row' : 'row',
+          paddingHorizontal: isSmallDevice ? 12 : 20,
+          paddingTop: 16, // Fixed padding top
+        }]}>
+          <View style={[styles.statCard, { width: statCardWidth }]}>
+            <Text style={[styles.statNumber, { fontSize: isSmallDevice ? 20 : 24 }]}>
+              {pendingCount}
+            </Text>
+            <Text style={[styles.statLabel, { fontSize: isSmallDevice ? 10 : 12 }]}>Pending</Text>
+          </View>
+          <View style={[styles.statCard, { width: statCardWidth }]}>
+            <Text style={[styles.statNumber, { fontSize: isSmallDevice ? 20 : 24 }]}>
+              {inProgressCount}
+            </Text>
+            <Text style={[styles.statLabel, { fontSize: isSmallDevice ? 10 : 12 }]}>In Progress</Text>
+          </View>
+          <View style={[styles.statCard, { width: statCardWidth }]}>
+            <Text style={[styles.statNumber, { fontSize: isSmallDevice ? 20 : 24 }]}>
+              {doneCount}
+            </Text>
+            <Text style={[styles.statLabel, { fontSize: isSmallDevice ? 10 : 12 }]}>Completed</Text>
+          </View>
+        </View>
+
+        {/* Add Task Button */}
+        <TouchableOpacity
+          style={[
+            styles.addTaskButton,
+            { 
+              marginBottom: 16, // Fixed margin instead of dynamic
+              marginHorizontal: isSmallDevice ? 12 : 20,
+              paddingVertical: isSmallDevice ? 14 : 18,
+            }
+          ]}
+          onPress={() => router.push("/add-task")}
+        >
+          <View style={styles.addTaskButtonContent}>
+            <Text style={[styles.addTaskIcon, { fontSize: isSmallDevice ? 20 : 24 }]}>+</Text>
+            <Text style={[styles.addTaskButtonText, { fontSize: isSmallDevice ? 16 : 18 }]}>Add New Task</Text>
+          </View>
+        </TouchableOpacity>
+      </BlurView>
+    </View>
+  );
+};
+
 export default function HomeTab() {
   const [tasks, setTasks] = useState<EnhancedTask[]>([]);
+  const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false); // Add refreshing state
   const [orientation, setOrientation] = useState(
     screenWidth > screenHeight ? 'landscape' : 'portrait'
   );
@@ -172,10 +245,8 @@ export default function HomeTab() {
       const task = tasks.find(t => t._id === id);
       if (!task) return;
 
-      // Map "in progress" to "in progress" for local state, but keep API payload as is
       const mappedStatus = newStatus === "in progress" ? "in progress" : newStatus;
 
-      // Update local state immediately
       setTasks(prev =>
         prev.map(t =>
           t._id === id
@@ -184,7 +255,6 @@ export default function HomeTab() {
         )
       );
 
-      // Update backend
       await taskAPI.updateTask(id, { status: newStatus });
     } catch (err) {
       console.error("❌ Failed to update task status:", err);
@@ -226,9 +296,14 @@ export default function HomeTab() {
 
   useFocusEffect(
     useCallback(() => {
+      // Force a re-render and re-application of sticky header on focus
+      setRefreshing(true);
+      setTimeout(() => {
+        setRefreshing(false);
+      }, 100);
+
       fetchTasks();
       
-      // Listen for orientation changes
       const subscription = Dimensions.addEventListener('change', updateOrientation);
       
       return () => subscription?.remove();
@@ -253,7 +328,7 @@ export default function HomeTab() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.loadingContainer}>
+      <SafeAreaView style={styles.loadingContainer} edges={['top', 'left', 'right']}>
         <StatusBar barStyle="dark-content" backgroundColor="#f8f9fa" />
         <View style={styles.loadingContent}>
           <ActivityIndicator size="large" color="#4ECDC4" />
@@ -268,7 +343,7 @@ export default function HomeTab() {
   const statCardWidth = (screenWidth - 40 - (statsPerRow - 1) * 12) / statsPerRow;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <StatusBar barStyle="dark-content" backgroundColor="#f8f9fa" />
 
       {/* Authentication Header */}
@@ -283,9 +358,16 @@ export default function HomeTab() {
           keyExtractor={(item) => item._id}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
-            paddingTop: 165, // Adjust this value to the height of your sticky header
             paddingBottom: 100, // Add extra bottom padding for tab bar
             paddingHorizontal: isSmallDevice ? 12 : 20,
+          }}
+          // Use ListHeaderComponent and stickyHeaderIndices
+          ListHeaderComponent={tasks.length > 0 ? <StickyHeader tasks={tasks} /> : null}
+          stickyHeaderIndices={[0]}
+          refreshing={refreshing} // Added refreshing prop
+          onRefresh={() => {
+            setRefreshing(true);
+            fetchTasks(); // Re-fetch tasks on manual refresh
           }}
           renderItem={({ item }) => {
             const statusInfo = getStatusInfo(item.status);
@@ -470,56 +552,6 @@ export default function HomeTab() {
           ListEmptyComponent={tasks.length === 0 ? renderEmptyState : null}
         />
       )}
-
-      {/* This is the STICKY and BLURRED header section */}
-      {tasks.length > 0 && (
-        <View style={styles.stickyHeader}>
-          <BlurView
-            style={styles.blurContainer}
-            intensity={150}
-            tint="default"
-          >
-            {/* Header Stats */}
-            <View style={[styles.statsContainer, {
-              flexDirection: orientation === 'landscape' ? 'row' : 'row',
-              paddingHorizontal: isSmallDevice ? 12 : 20,
-            }]}>
-              <View style={[styles.statCard, { width: statCardWidth }]}>
-                <Text style={[styles.statNumber, { fontSize: isSmallDevice ? 20 : 24 }]}>
-                  {tasks.filter(t => t.status === 'pending').length}
-                </Text>
-                <Text style={[styles.statLabel, { fontSize: isSmallDevice ? 10 : 12 }]}>Pending</Text>
-              </View>
-              <View style={[styles.statCard, { width: statCardWidth }]}>
-                <Text style={[styles.statNumber, { fontSize: isSmallDevice ? 20 : 24 }]}>
-                  {tasks.filter(t => t.status === 'in progress').length}
-                </Text>
-                <Text style={[styles.statLabel, { fontSize: isSmallDevice ? 10 : 12 }]}>In Progress</Text>
-              </View>
-              <View style={[styles.statCard, { width: statCardWidth }]}>
-                <Text style={[styles.statNumber, { fontSize: isSmallDevice ? 20 : 24 }]}>
-                  {tasks.filter(t => t.status === 'done').length}
-                </Text>
-                <Text style={[styles.statLabel, { fontSize: isSmallDevice ? 10 : 12 }]}>Completed</Text>
-              </View>
-            </View>
-
-            {/* Add Task Button */}
-            <TouchableOpacity
-              style={[styles.addTaskButton, {
-                marginHorizontal: isSmallDevice ? 12 : 20,
-                paddingVertical: isSmallDevice ? 14 : 18,
-              }]}
-              onPress={() => router.push("/add-task")}
-            >
-              <View style={styles.addTaskButtonContent}>
-                <Text style={[styles.addTaskIcon, { fontSize: isSmallDevice ? 20 : 24 }]}>+</Text>
-                <Text style={[styles.addTaskButtonText, { fontSize: isSmallDevice ? 16 : 18 }]}>Add New Task</Text>
-              </View>
-            </TouchableOpacity>
-          </BlurView>
-        </View>
-      )}
     </SafeAreaView>
   );
 }
@@ -660,18 +692,14 @@ const styles = StyleSheet.create({
   },
   // The new style for the sticky header
   stickyHeader: {
-    position: 'absolute',
-    top: 75, // Adjust this value to sit below the main header
-    left: 0,
-    right: 0,
-    zIndex: 10,
-    paddingBottom: 20, // This helps with spacing from the bottom
+    backgroundColor: 'transparent',
+    paddingTop: 0,
   },
   blurContainer: {
+    paddingBottom: 20, // This helps with spacing from the bottom
     overflow: 'hidden',
     backgroundColor: 'rgba(255, 255, 255, 0.5)',
   },
-
   // Stats Section (Header) - Responsive
   statsContainer: {
     paddingTop: 10,
@@ -703,9 +731,8 @@ const styles = StyleSheet.create({
 
   // Add Task Button - Responsive
   addTaskButton: {
-    marginBottom: 10,
     backgroundColor: '#4ECDC4',
-    borderRadius: isSmallDevice ? 12 : 16,
+    borderRadius: isSmallDevice ? 12 : 16, 
     shadowColor: '#4ECDC4',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,

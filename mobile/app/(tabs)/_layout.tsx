@@ -1,9 +1,18 @@
-// app/(tabs)/_layout.tsx
+// app/(tabs)/_layout.tsx - COMPLETE REPLACEMENT
 import { Tabs, router } from 'expo-router';
-import { Platform, Text, View } from 'react-native';
+import { Platform, Text, View, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+// Get screen dimensions for responsive design
+const { width: screenWidth } = Dimensions.get('window');
+const isSmallDevice = screenWidth < 375;
+
 export default function TabLayout() {
+  // FIXED VALUES - NO useSafeAreaInsets!
+  const bottomPadding = Platform.OS === 'ios' ? 12 : 16;
+  const tabBarHeight = Platform.OS === 'ios' ? 85 : 80;
+  const marginBottom = Platform.OS === 'ios' ? 12 : 16;
+
   return (
     <Tabs
       screenOptions={{
@@ -14,26 +23,33 @@ export default function TabLayout() {
           backgroundColor: '#ffffff',
           borderTopWidth: 1,
           borderTopColor: '#e5e7eb',
-          marginLeft: 10,
-          marginRight: 10,
-          paddingBottom: Platform.OS === 'ios' ? 20 : 30,
-          height: Platform.OS === 'ios' ? 90 : 80,
-          marginBottom: Platform.OS === 'ios' ? 10 : 15,
-          borderRadius: 20,
+          // FIXED POSITIONING - NO CONFLICTS
           position: 'absolute',
           left: 16,
           right: 16,
+          bottom: marginBottom,
+          // FIXED DIMENSIONS
+          height: tabBarHeight,
+          paddingBottom: bottomPadding,
+          paddingTop: 10,
+          paddingHorizontal: isSmallDevice ? 4 : 6,
+          // STYLING
+          borderRadius: 20,
           elevation: 8,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: isSmallDevice ? 11 : 12,
           fontWeight: '500',
-          marginTop: 4,
-          marginBottom: 10,
+          marginTop: 3,
+          marginBottom: 5,
         },
         tabBarIconStyle: {
-          marginBottom: 3,
-          marginTop: 8,
+          marginTop: 0,
+          marginBottom: 0,
         },
       }}
     >
@@ -43,35 +59,33 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
+            <Ionicons name="home" size={24} color={color} />
           ),
         }}
       />
 
-      {/* Calendar Tab (renamed from upcoming) */}
+      {/* Upcoming Tab */}
       <Tabs.Screen
         name="upcoming"
         options={{
           title: 'Upcoming',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="calendar" size={size} color={color} />
+            <Ionicons name="calendar" size={24} color={color} />
           ),
         }}
       />
 
-      {/* Add Button (Center) */}
+      {/* Center Add Button */}
       <Tabs.Screen
         name="add"
         options={{
           title: '',
-          tabBarIcon: ({ color, size }) => <AddButton />,
+          tabBarIcon: () => <AddButton />,
           tabBarLabel: () => null,
         }}
         listeners={{
           tabPress: (e) => {
-            // Prevent the default action (which is to navigate to the "add" tab's route)
             e.preventDefault();
-            // Manually push to the add-task route
             router.push('/add-task');
           },
         }}
@@ -83,7 +97,7 @@ export default function TabLayout() {
         options={{
           title: 'Search',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="search" size={size} color={color} />
+            <Ionicons name="search" size={24} color={color} />
           ),
         }}
       />
@@ -94,7 +108,7 @@ export default function TabLayout() {
         options={{
           title: 'Browse',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="menu" size={size} color={color} />
+            <Ionicons name="menu" size={24} color={color} />
           ),
         }}
       />
@@ -102,26 +116,30 @@ export default function TabLayout() {
   );
 }
 
-// Custom Add Button Component
+// Fixed Add Button Component
 const AddButton = () => {
   return (
     <View
       style={{
-        width: 56,
-        height: 56,
-        borderRadius: 28,
+        width: isSmallDevice ? 52 : 56,
+        height: isSmallDevice ? 52 : 56,
+        borderRadius: isSmallDevice ? 26 : 28,
         backgroundColor: '#6366f1',
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: 21,
+        marginTop: Platform.OS === 'ios' ? 16 : 14, // FIXED MARGIN
         shadowColor: '#6366f1',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
-        shadowRadius: 0.8,
+        shadowRadius: 8,
         elevation: 10,
       }}
     >
-      <Text style={{ fontSize: 28, color: '#ffffff', fontWeight: '300' }}>
+      <Text style={{ 
+        fontSize: isSmallDevice ? 24 : 28, 
+        color: '#ffffff', 
+        fontWeight: '300' 
+      }}>
         +
       </Text>
     </View>

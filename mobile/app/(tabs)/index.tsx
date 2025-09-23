@@ -705,6 +705,7 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 10,
     gap: 12,
+    paddingLeft:7
   },
   statCard: {
     backgroundColor: '#fff',

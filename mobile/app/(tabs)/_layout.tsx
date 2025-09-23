@@ -1,17 +1,17 @@
-// app/(tabs)/_layout.tsx - Floating tabs with SafeAreaView positioning
+// app/(tabs)/_layout.tsx - Corrected Code
 import { Tabs, router } from 'expo-router';
 import { Platform, Text, View, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width: screenWidth } = Dimensions.get('window');
 const isSmallDevice = screenWidth < 375;
 
 export default function TabLayout() {
-  const insets = useSafeAreaInsets();
-  
+  const tabBarHeight = Platform.OS === 'ios' ? 65 : 80;
+
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: 'transparent' }}>
       <Tabs
         screenOptions={{
           headerShown: false,
@@ -21,12 +21,9 @@ export default function TabLayout() {
             backgroundColor: '#ffffff',
             borderTopWidth: 1,
             borderTopColor: '#e5e7eb',
-            // Floating positioning with SafeAreaView compensation
-            position: 'absolute',
-            left: 16,
-            right: 16,
-            bottom: insets.bottom + 16, // This uses SafeAreaView insets correctly
-            height: 80,
+            marginHorizontal: 16,
+            marginBottom: 40,
+            height: tabBarHeight,
             paddingBottom: 8,
             paddingTop: 10,
             paddingHorizontal: isSmallDevice ? 4 : 6,
@@ -36,8 +33,6 @@ export default function TabLayout() {
             shadowOffset: { width: 0, height: -2 },
             shadowOpacity: 0.1,
             shadowRadius: 8,
-            marginLeft:10,
-            marginRight:10
           },
           tabBarLabelStyle: {
             fontSize: isSmallDevice ? 11 : 12,
@@ -51,7 +46,6 @@ export default function TabLayout() {
           },
         }}
       >
-        {/* Home Tab */}
         <Tabs.Screen
           name="index"
           options={{
@@ -62,7 +56,6 @@ export default function TabLayout() {
           }}
         />
 
-        {/* Upcoming Tab */}
         <Tabs.Screen
           name="upcoming"
           options={{
@@ -73,7 +66,6 @@ export default function TabLayout() {
           }}
         />
 
-        {/* Center Add Button */}
         <Tabs.Screen
           name="add"
           options={{
@@ -89,7 +81,6 @@ export default function TabLayout() {
           }}
         />
 
-        {/* Search Tab */}
         <Tabs.Screen
           name="search"
           options={{
@@ -100,7 +91,6 @@ export default function TabLayout() {
           }}
         />
 
-        {/* Browse Tab */}
         <Tabs.Screen
           name="browse"
           options={{
@@ -134,10 +124,10 @@ const AddButton = () => {
         elevation: 10,
       }}
     >
-      <Text style={{ 
-        fontSize: isSmallDevice ? 24 : 28, 
-        color: '#ffffff', 
-        fontWeight: '300' 
+      <Text style={{
+        fontSize: isSmallDevice ? 24 : 28,
+        color: '#ffffff',
+        fontWeight: '300'
       }}>
         +
       </Text>

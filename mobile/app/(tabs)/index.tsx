@@ -696,8 +696,9 @@ const styles = StyleSheet.create({
     paddingTop: 0,
   },
   blurContainer: {
-    paddingBottom: 20, // This helps with spacing from the bottom
+    paddingBottom: 2, // This helps with spacing from the bottom
     overflow: 'hidden',
+    borderRadius:10,
     backgroundColor: 'rgba(255, 255, 255, 0.5)',
   },
   // Stats Section (Header) - Responsive

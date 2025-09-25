@@ -192,13 +192,13 @@ export default function AddTask() {
             }}>
               📈 Priority
             </Text>
-              <View style={{flexDirection: "row", marginBottom: 12, gap: 10}}>
+              <View style={{flexDirection: "row", marginBottom: 1, gap: 10}}>
                 {["low","medium","high"].map((p) => (
                   <TouchableOpacity
                   key={p}
                   style={{
                     flex:1,
-                    padding:10,
+                    padding:5,
                     borderRadius: 8,
                     backgroundColor: priority === p ? "#007AFF" : "#ddd"
                   }}
@@ -208,7 +208,7 @@ export default function AddTask() {
                     style={{
                       textAlign: "center",
                       padding: 6,
-                      color: priority === p ? "#fff" : "#000"
+                      color: priority === p ? "#fff" : "#000",
                     }} 
                     >
                       {p.toUpperCase()}
@@ -221,7 +221,7 @@ export default function AddTask() {
           </View>
 
           {/* Due Date Section */}
-          <View style={{ marginBottom: 40 }}>
+          <View style={{ marginBottom: 30 }}>
             <Text style={{ 
               fontSize: 16, 
               fontWeight: '600', 
@@ -237,7 +237,7 @@ export default function AddTask() {
                 borderWidth: 2,
                 borderColor: dueDate ? '#007AFF' : '#e9ecef',
                 paddingHorizontal: 16,
-                paddingVertical: 16,
+                paddingVertical: 10,
                 borderRadius: 12,
                 flexDirection: 'row',
                 justifyContent: 'space-between',

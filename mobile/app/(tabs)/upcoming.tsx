@@ -370,11 +370,11 @@ export default function CalendarTab() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#ffffff',
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#ffffff',
   },
   loadingContent: {
     flex: 1,
@@ -408,6 +408,7 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flex: 1,
+    backgroundColor: '#ffffff',
   },
   monthHeader: {
     flexDirection: 'row',
@@ -521,8 +522,8 @@ const styles = StyleSheet.create({
   selectedDateSection: {
     backgroundColor: '#fff',
     paddingHorizontal: isSmallDevice ? 20 : 32,
-    paddingVertical: 20,
-    marginBottom: 120, // Increased bottom margin for better visibility
+    paddingVertical: 10,
+    marginBottom: 20,
   },
   selectedDateTitle: {
     fontSize: isSmallDevice ? 18 : 20,
@@ -533,8 +534,8 @@ const styles = StyleSheet.create({
   todaySection: {
     backgroundColor: '#fff',
     paddingHorizontal: isSmallDevice ? 20 : 32,
-    paddingVertical: 20,
-    marginBottom: 120, // Increased space for tab bar
+    paddingVertical: 1,
+    marginBottom: 20,
   },
   todayTitle: {
     fontSize: isSmallDevice ? 18 : 20,

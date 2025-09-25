@@ -2,16 +2,18 @@
 import { Tabs, router } from 'expo-router';
 import { Platform, Text, View, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width: screenWidth } = Dimensions.get('window');
 const isSmallDevice = screenWidth < 375;
 
 export default function TabLayout() {
+  const insets = useSafeAreaInsets();
   const tabBarHeight = Platform.OS === 'ios' ? 65 : 80;
 
   return (
-    <View style={{ flex: 1, backgroundColor: 'transparent' }}>
+    // We use a regular View and apply the bottom safe area inset as padding.
+    <View style={{ flex: 1, backgroundColor: "transparent" }}>
       <Tabs
         screenOptions={{
           headerShown: false,
@@ -22,7 +24,8 @@ export default function TabLayout() {
             borderTopWidth: 1,
             borderTopColor: '#e5e7eb',
             marginHorizontal: 16,
-            marginBottom: 40,
+            // Use insets.bottom to dynamically add safe area spacing
+            marginBottom: insets.bottom + 15,
             height: tabBarHeight,
             paddingBottom: 8,
             paddingTop: 10,
@@ -105,7 +108,7 @@ export default function TabLayout() {
   );
 }
 
-// Fixed Add Button Component
+// **You were missing this part of the code!**
 const AddButton = () => {
   return (
     <View

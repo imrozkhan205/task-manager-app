@@ -242,10 +242,11 @@ const styles = StyleSheet.create({
   // Form Styles
   formContainer: {
     flex: 1,
-    paddingBottom: 20,
+    paddingBottom: 10,
+    marginTop:-19,
   },
   inputContainer: {
-    marginBottom: isSmallDevice ? 20 : 24,
+    marginBottom: isSmallDevice ? 10: 24,
   },
   inputLabel: {
     fontSize: isSmallDevice ? 14 : 16,
@@ -318,9 +319,11 @@ const styles = StyleSheet.create({
   footerText: {
     color: '#6c757d',
     fontWeight: '500',
+    marginTop:-10,
   },
   signupLink: {
     color: '#4ECDC4',
     fontWeight: '700',
+    marginBottom:10
   },
 });

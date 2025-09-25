@@ -218,6 +218,14 @@ export default function HomeTab() {
     }
   };
 
+const Footer = () => {
+  return (
+    <View style={footerStyles.container}>
+      <Text style={footerStyles.text}>Made by Imroz</Text>
+    </View>
+  );
+};
+
   // Update orientation on dimension changes
   const updateOrientation = () => {
     const { width, height } = Dimensions.get('window');
@@ -323,6 +331,7 @@ export default function HomeTab() {
       >
         <Text style={styles.emptyStateButtonText}>✨ Create First Task</Text>
       </TouchableOpacity>
+      <Footer />
     </View>
   );
 
@@ -368,6 +377,9 @@ export default function HomeTab() {
           onRefresh={() => {
             setRefreshing(true);
             fetchTasks(); // Re-fetch tasks on manual refresh
+            setTimeout(() => {
+              setRefreshing(false);
+            }, 1500); // 1.5 seconds timeout
           }}
           renderItem={({ item }) => {
             const statusInfo = getStatusInfo(item.status);
@@ -669,6 +681,21 @@ const headerStyles = StyleSheet.create({
   },
 });
 
+const footerStyles = StyleSheet.create({
+  container: {
+    paddingVertical: 20,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  text: {
+    fontSize: isSmallDevice ? 12 : 14,
+    color: '#6c757d',
+    fontWeight: '500',
+    fontStyle: 'italic',
+  },
+});
+
+
 // Main Styles
 const styles = StyleSheet.create({
   container: {
@@ -698,14 +725,14 @@ const styles = StyleSheet.create({
   blurContainer: {
     paddingBottom: 2, // This helps with spacing from the bottom
     overflow: 'hidden',
-    borderRadius:10,
+    borderBottomEndRadius:10,
     backgroundColor: 'rgba(255, 255, 255, 0.5)',
   },
   // Stats Section (Header) - Responsive
   statsContainer: {
     paddingTop: 10,
     paddingBottom: 10,
-    gap: 12,
+    gap: 10,
     paddingLeft:7
   },
   statCard: {

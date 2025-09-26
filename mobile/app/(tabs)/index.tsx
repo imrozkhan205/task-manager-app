@@ -74,7 +74,7 @@ const AuthenticatedHeader = () => {
       <View style={headerStyles.container}>
         <View style={headerStyles.content}>
           <View>
-            <Text style={headerStyles.title}>Task Manager</Text>
+            <Text style={headerStyles.title}>Noteify</Text>
             <Text style={headerStyles.subtitle}>Welcome back, {user?.name}!</Text>
           </View>
 
@@ -337,7 +337,7 @@ const Footer = () => {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.loadingContainer} edges={['top', 'left', 'right']}>
+      <SafeAreaView style={styles.loadingContainer} edges={['top', 'left', 'right', 'bottom']}>
         <StatusBar barStyle="dark-content" backgroundColor="#f8f9fa" />
         <View style={styles.loadingContent}>
           <ActivityIndicator size="large" color="#4ECDC4" />
@@ -367,7 +367,7 @@ const Footer = () => {
           keyExtractor={(item) => item._id}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
-            paddingBottom: 100, // Add extra bottom padding for tab bar
+            paddingBottom: insets.bottom + 80, // enough space above the tab bar
             paddingHorizontal: isSmallDevice ? 12 : 20,
           }}
           // Use ListHeaderComponent and stickyHeaderIndices
@@ -683,9 +683,12 @@ const headerStyles = StyleSheet.create({
 
 const footerStyles = StyleSheet.create({
   container: {
-    paddingVertical: 20,
+    paddingVertical: 16,
     alignItems: 'center',
-    marginTop: 20,
+    justifyContent: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#e9ecef',
+    backgroundColor: '#f8f9fa',
   },
   text: {
     fontSize: isSmallDevice ? 12 : 14,
@@ -694,7 +697,6 @@ const footerStyles = StyleSheet.create({
     fontStyle: 'italic',
   },
 });
-
 
 // Main Styles
 const styles = StyleSheet.create({

@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "Task Manager",
-    "slug": "task-manager",
+    "name": "Noteify",
+    "slug": "noteify",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/tasks-LP3.png",
     "scheme": "mobile",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -13,7 +13,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/task-manager.png",
+        "foregroundImage": "./assets/images/tasks-LP3.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
@@ -22,20 +22,21 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/tasks-LP3.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/splash.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
@@ -43,7 +44,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "2db4633a-bc3d-4c5a-b5a4-aacc28480896"
+        "projectId": "3373a0ac-96eb-4376-96dd-c82870223f65"
       }
     }
   }

@@ -1,5 +1,5 @@
 // app/_layout.tsx
-import { Stack } from 'expo-router';
+import { Stack, Slot, Redirect } from 'expo-router';
 import { AuthProvider } from '../contexts/AuthContext';
 import AuthGuard from '../components/AuthGuard';
 
@@ -8,7 +8,8 @@ export default function RootLayout() {
     <AuthProvider>
       <AuthGuard>
         <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(tabs)" />
+          {/* 👇 Redirect root to tabs by default */}
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="login" />
           <Stack.Screen name="signup" />
           <Stack.Screen name="add-task" />

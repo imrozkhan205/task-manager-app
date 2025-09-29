@@ -401,9 +401,11 @@ const styles = StyleSheet.create({
   footerText: {
     color: '#6c757d',
     fontWeight: '500',
+    marginTop:-60
   },
   loginLink: {
     color: '#4ECDC4',
     fontWeight: '700',
+    marginTop:30
   },
 });

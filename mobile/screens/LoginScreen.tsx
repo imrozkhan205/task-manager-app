@@ -319,11 +319,11 @@ const styles = StyleSheet.create({
   footerText: {
     color: '#6c757d',
     fontWeight: '500',
-    marginTop:-10,
+    marginTop:-50,
   },
   signupLink: {
     color: '#4ECDC4',
     fontWeight: '700',
-    marginBottom:10
+    marginBottom:50
   },
 });

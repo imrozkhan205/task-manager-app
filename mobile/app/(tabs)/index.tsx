@@ -1,4 +1,4 @@
-// app/(tabs)/index.tsx
+// app/(tabs)/index.tsx - Optimized with Pagination
 import { useState, useCallback } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
@@ -19,29 +19,27 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRouter, useFocusEffect, router } from "expo-router";
 import { BlurView } from "expo-blur";
 
-// Get screen dimensions
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
-
-// Responsive breakpoints
 const isSmallDevice = screenWidth < 375;
 const isMediumDevice = screenWidth >= 375 && screenWidth < 414;
 const isLargeDevice = screenWidth >= 414;
 
-// Enhanced Task type with status field
 interface EnhancedTask extends Omit<Task, 'completed'> {
   status: 'pending' | 'in progress' | 'done';
-  completed?: boolean; // Keep for backward compatibility
+  completed?: boolean;
 }
+
 interface StickyHeaderProps {
   tasks: EnhancedTask[];
 }
-// Authentication Header Component
+
+// Authentication Header Component (unchanged)
 const AuthenticatedHeader = () => {
   const { user, logout } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   const handleLogout = async () => {
-    setShowUserMenu(false); // Close menu first
+    setShowUserMenu(false);
     Alert.alert(
       "Logout",
       "Are you sure you want to logout?",
@@ -62,7 +60,6 @@ const AuthenticatedHeader = () => {
     );
   };
 
-  // Close menu when tapping outside
   const closeMenu = () => {
     if (showUserMenu) {
       setShowUserMenu(false);
@@ -87,7 +84,6 @@ const AuthenticatedHeader = () => {
         </View>
       </View>
 
-      {/* Overlay to close dropdown */}
       {showUserMenu && (
         <TouchableOpacity
           style={headerStyles.overlay}
@@ -124,18 +120,15 @@ const AuthenticatedHeader = () => {
   );
 };
 
-// New component for the sticky header
-// Fixed StickyHeader component - replace your existing one
+// Sticky Header Component (unchanged)
 const StickyHeader: React.FC<StickyHeaderProps> = ({ tasks }) => {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
-  // Calculate stats
   const pendingCount = tasks.filter(t => t.status === 'pending').length;
   const inProgressCount = tasks.filter(t => t.status === 'in progress').length;
   const doneCount = tasks.filter(t => t.status === 'done').length;
 
-  // Responsive stats layout
   const orientation = screenWidth > screenHeight ? 'landscape' : 'portrait';
   const statsPerRow = orientation === 'landscape' ? 3 : (isSmallDevice ? 3 : 3);
   const statCardWidth = (screenWidth - 40 - (statsPerRow - 1) * 12) / statsPerRow;
@@ -144,14 +137,13 @@ const StickyHeader: React.FC<StickyHeaderProps> = ({ tasks }) => {
     <View style={styles.stickyHeader}>
       <BlurView
         style={styles.blurContainer}
-        intensity={80} // Reduced intensity for better stability
-        tint="light" // Changed from "default" to "light"
+        intensity={80}
+        tint="light"
       >
-        {/* Header Stats */}
         <View style={[styles.statsContainer, {
           flexDirection: orientation === 'landscape' ? 'row' : 'row',
           paddingHorizontal: isSmallDevice ? 12 : 20,
-          paddingTop: 16, // Fixed padding top
+          paddingTop: 16,
         }]}>
           <View style={[styles.statCard, { width: statCardWidth }]}>
             <Text style={[styles.statNumber, { fontSize: isSmallDevice ? 20 : 24 }]}>
@@ -173,12 +165,11 @@ const StickyHeader: React.FC<StickyHeaderProps> = ({ tasks }) => {
           </View>
         </View>
 
-        {/* Add Task Button */}
         <TouchableOpacity
           style={[
             styles.addTaskButton,
             { 
-              marginBottom: 16, // Fixed margin instead of dynamic
+              marginBottom: 16,
               marginHorizontal: isSmallDevice ? 12 : 20,
               paddingVertical: isSmallDevice ? 14 : 18,
             }
@@ -195,29 +186,6 @@ const StickyHeader: React.FC<StickyHeaderProps> = ({ tasks }) => {
   );
 };
 
-export default function HomeTab() {
-  const [tasks, setTasks] = useState<EnhancedTask[]>([]);
-  const insets = useSafeAreaInsets();
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false); // Add refreshing state
-  const [orientation, setOrientation] = useState(
-    screenWidth > screenHeight ? 'landscape' : 'portrait'
-  );
-  const router = useRouter();
-
-  const getPriorityInfo = (priority: 'low' | 'medium' | 'high') => {
-    switch(priority) {
-      case 'low':
-        return { label: '⏳ LOW', color: '#2ecc71' }; // green
-      case 'medium':
-        return { label: '🔖 MEDIUM', color: '#f1c40f' }; // yellow
-      case 'high':
-        return { label: '🚩 HIGH', color: '#e74c3c' }; // red
-      default:
-        return { label: '🔖 MEDIUM', color: '#f1c40f' };
-    }
-  };
-
 const Footer = () => {
   return (
     <View style={footerStyles.container}>
@@ -226,47 +194,120 @@ const Footer = () => {
   );
 };
 
-  // Update orientation on dimension changes
+export default function HomeTab() {
+  // 🚀 NEW: Pagination states
+  const [tasks, setTasks] = useState<EnhancedTask[]>([]);
+  const [displayedTasks, setDisplayedTasks] = useState<EnhancedTask[]>([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const ITEMS_PER_PAGE = 5; // Load 5 tasks at a time
+  
+  const insets = useSafeAreaInsets();
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [orientation, setOrientation] = useState(
+    screenWidth > screenHeight ? 'landscape' : 'portrait'
+  );
+  const router = useRouter();
+
+  const getPriorityInfo = (priority: 'low' | 'medium' | 'high') => {
+    switch(priority) {
+      case 'low':
+        return { label: '⏳ LOW', color: '#2ecc71' };
+      case 'medium':
+        return { label: '🔖 MEDIUM', color: '#f1c40f' };
+      case 'high':
+        return { label: '🚩 HIGH', color: '#e74c3c' };
+      default:
+        return { label: '🔖 MEDIUM', color: '#f1c40f' };
+    }
+  };
+
   const updateOrientation = () => {
     const { width, height } = Dimensions.get('window');
     setOrientation(width > height ? 'landscape' : 'portrait');
   };
 
-  const fetchTasks = async () => {
+  // 🚀 OPTIMIZED: Fetch only initial batch
+  const fetchTasks = async (isRefreshing = false) => {
     try {
+      if (isRefreshing) {
+        setRefreshing(true);
+      }
+      
       const data = await taskAPI.getTasks();
-      setTasks(data.map((task: Task) => ({
+      const enhancedTasks = data.map((task: Task) => ({
         ...task,
         status: task.status || (task.completed ? 'done' : 'pending'),
-      })));
-
+      }));
+      
+      setTasks(enhancedTasks);
+      
+      // Load only first batch
+      const initialBatch = enhancedTasks.slice(0, ITEMS_PER_PAGE);
+      setDisplayedTasks(initialBatch);
+      setPage(1);
+      setHasMore(enhancedTasks.length > ITEMS_PER_PAGE);
+      
     } catch (err) {
       console.error("❌ Failed to fetch tasks:", err);
+      Alert.alert("Error", "Failed to load tasks. Please try again.");
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
-  // Fixed updateTaskStatus function with correct status mapping
+  // 🚀 NEW: Load more tasks when scrolling
+  const loadMoreTasks = () => {
+    if (loadingMore || !hasMore) return;
+
+    setLoadingMore(true);
+    
+    // Simulate slight delay for smooth loading (optional)
+    setTimeout(() => {
+      const nextPage = page + 1;
+      const startIndex = page * ITEMS_PER_PAGE;
+      const endIndex = startIndex + ITEMS_PER_PAGE;
+      const newTasks = tasks.slice(startIndex, endIndex);
+      
+      if (newTasks.length > 0) {
+        setDisplayedTasks(prev => [...prev, ...newTasks]);
+        setPage(nextPage);
+        setHasMore(endIndex < tasks.length);
+      } else {
+        setHasMore(false);
+      }
+      
+      setLoadingMore(false);
+    }, 300);
+  };
+
   const updateTaskStatus = async (id: string, newStatus: "pending" | "in progress" | "done") => {
     try {
-      const task = tasks.find(t => t._id === id);
+      const task = displayedTasks.find(t => t._id === id);
       if (!task) return;
 
       const mappedStatus = newStatus === "in progress" ? "in progress" : newStatus;
 
+      // Update both lists
+      setDisplayedTasks(prev =>
+        prev.map(t =>
+          t._id === id ? { ...t, status: mappedStatus } : t
+        )
+      );
+      
       setTasks(prev =>
         prev.map(t =>
-          t._id === id
-            ? { ...t, status: mappedStatus }
-            : t
+          t._id === id ? { ...t, status: mappedStatus } : t
         )
       );
 
       await taskAPI.updateTask(id, { status: newStatus });
     } catch (err) {
       console.error("❌ Failed to update task status:", err);
-      fetchTasks(); // refresh to avoid stale state
+      fetchTasks();
     }
   };
 
@@ -279,16 +320,18 @@ const Footer = () => {
         onPress: async () => {
           try {
             await taskAPI.deleteTask(id);
-            fetchTasks();
+            // Remove from both lists
+            setDisplayedTasks(prev => prev.filter(t => t._id !== id));
+            setTasks(prev => prev.filter(t => t._id !== id));
           } catch (err) {
             console.error("❌ Failed to delete task:", err);
+            Alert.alert("Error", "Failed to delete task. Please try again.");
           }
         },
       },
     ]);
   };
 
-  // Fixed getStatusInfo function with consistent status values
   const getStatusInfo = (status: 'pending' | 'in progress' | 'done') => {
     switch (status) {
       case 'pending':
@@ -304,7 +347,6 @@ const Footer = () => {
 
   useFocusEffect(
     useCallback(() => {
-      // Force a re-render and re-application of sticky header on focus
       setRefreshing(true);
       setTimeout(() => {
         setRefreshing(false);
@@ -335,6 +377,18 @@ const Footer = () => {
     </View>
   );
 
+  // 🚀 NEW: Footer loading indicator
+  const renderFooter = () => {
+    if (!loadingMore) return null;
+    
+    return (
+      <View style={styles.footerLoader}>
+        <ActivityIndicator size="small" color="#4ECDC4" />
+        <Text style={styles.footerLoaderText}>Loading more tasks...</Text>
+      </View>
+    );
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={styles.loadingContainer} edges={['top', 'left', 'right', 'bottom']}>
@@ -347,7 +401,6 @@ const Footer = () => {
     );
   }
 
-  // Responsive stats layout
   const statsPerRow = orientation === 'landscape' ? 3 : (isSmallDevice ? 3 : 3);
   const statCardWidth = (screenWidth - 40 - (statsPerRow - 1) * 12) / statsPerRow;
 
@@ -355,32 +408,27 @@ const Footer = () => {
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <StatusBar barStyle="dark-content" backgroundColor="#f8f9fa" />
 
-      {/* Authentication Header */}
       <AuthenticatedHeader />
 
-      {/* The main scrollable task list */}
       {tasks.length === 0 ? (
         renderEmptyState()
       ) : (
         <FlatList
-          data={tasks}
+          data={displayedTasks}
           keyExtractor={(item) => item._id}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
-            paddingBottom: insets.bottom + 80, // enough space above the tab bar
+            paddingBottom: insets.bottom + 80,
             paddingHorizontal: isSmallDevice ? 12 : 20,
           }}
-          // Use ListHeaderComponent and stickyHeaderIndices
           ListHeaderComponent={tasks.length > 0 ? <StickyHeader tasks={tasks} /> : null}
           stickyHeaderIndices={[0]}
-          refreshing={refreshing} // Added refreshing prop
-          onRefresh={() => {
-            setRefreshing(true);
-            fetchTasks(); // Re-fetch tasks on manual refresh
-            setTimeout(() => {
-              setRefreshing(false);
-            }, 1500); // 1.5 seconds timeout
-          }}
+          refreshing={refreshing}
+          onRefresh={() => fetchTasks(true)}
+          // 🚀 NEW: Infinite scroll
+          onEndReached={loadMoreTasks}
+          onEndReachedThreshold={0.5} // Load more when 50% from bottom
+          ListFooterComponent={renderFooter}
           renderItem={({ item }) => {
             const statusInfo = getStatusInfo(item.status);
             return (
@@ -408,7 +456,6 @@ const Footer = () => {
                   </View>
                 </View>
 
-                {/* Top Section: Status Badge + Task Content */}
                 <View style={[
                   styles.taskMainContent,
                   {
@@ -417,7 +464,6 @@ const Footer = () => {
                   }
                 ]}>
                   <View style={styles.taskHeader}>
-                    {/* Status Badge */}
                     <View style={[
                       styles.statusBadge,
                       {
@@ -432,7 +478,6 @@ const Footer = () => {
                       </Text>
                     </View>
 
-                    {/* Task Content */}
                     <View style={styles.taskContent}>
                       <Text
                         style={[
@@ -467,7 +512,6 @@ const Footer = () => {
                       ) : null}
                     </View>
 
-                    {/* Action Buttons - Mobile optimized position */}
                     {orientation !== 'landscape' && (
                       <View style={styles.actionButtonsVertical}>
                         <TouchableOpacity
@@ -492,7 +536,6 @@ const Footer = () => {
                     )}
                   </View>
 
-                  {/* Quick Status Buttons - Responsive layout */}
                   <View style={[
                     styles.quickStatusButtons,
                     {
@@ -541,7 +584,6 @@ const Footer = () => {
                   </View>
                 </View>
 
-                {/* Landscape Action Buttons */}
                 {orientation === 'landscape' && (
                   <View style={styles.actionButtonsHorizontal}>
                     <TouchableOpacity
@@ -568,7 +610,7 @@ const Footer = () => {
   );
 }
 
-// Header Styles for Authentication
+// Styles remain the same, just adding footer loader styles
 const headerStyles = StyleSheet.create({
   privacyButton: {
     flexDirection: "row",
@@ -604,11 +646,11 @@ const headerStyles = StyleSheet.create({
     right: 0,
     bottom: 0,
     backgroundColor: 'transparent',
-    zIndex: 999, // sits below dropdown but above content
+    zIndex: 999,
   },
   dropdown: {
     position: 'absolute',
-    top: 70, // adjust so it sits below header
+    top: 70,
     right: isSmallDevice ? 20 : 32,
     backgroundColor: '#fff',
     borderRadius: 12,
@@ -619,7 +661,7 @@ const headerStyles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 12,
     elevation: 10,
-    zIndex: 1000, // higher than overlay
+    zIndex: 1000,
   },
   content: {
     flexDirection: 'row',
@@ -698,7 +740,6 @@ const footerStyles = StyleSheet.create({
   },
 });
 
-// Main Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -719,18 +760,28 @@ const styles = StyleSheet.create({
     color: "#6c757d",
     fontWeight: "500",
   },
-  // The new style for the sticky header
+  // 🚀 NEW: Footer loader styles
+  footerLoader: {
+    paddingVertical: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  footerLoaderText: {
+    marginTop: 8,
+    fontSize: 14,
+    color: '#6c757d',
+    fontWeight: '500',
+  },
   stickyHeader: {
     backgroundColor: 'transparent',
     paddingTop: 0,
   },
   blurContainer: {
-    paddingBottom: 2, // This helps with spacing from the bottom
+    paddingBottom: 2,
     overflow: 'hidden',
     borderBottomEndRadius:10,
     backgroundColor: 'rgba(255, 255, 255, 0.5)',
   },
-  // Stats Section (Header) - Responsive
   statsContainer: {
     paddingTop: 10,
     paddingBottom: 10,
@@ -759,8 +810,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     textAlign: 'center',
   },
-
-  // Add Task Button - Responsive
   addTaskButton: {
     backgroundColor: '#4ECDC4',
     borderRadius: isSmallDevice ? 12 : 16, 
@@ -785,8 +834,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
   },
-
-  // Task Cards - Responsive
   taskCard: {
     borderRadius: isSmallDevice ? 16 : 20,
     shadowColor: '#000',
@@ -813,7 +860,7 @@ const styles = StyleSheet.create({
   },
   taskContent: {
     flex: 1,
-    minWidth: 0, // Prevents text overflow
+    minWidth: 0,
   },
   taskTitle: {
     fontWeight: '700',
@@ -861,8 +908,6 @@ const styles = StyleSheet.create({
   quickStatusText: {
     fontWeight: '600',
   },
-
-  // Action Buttons - Responsive positioning
   actionButtonsVertical: {
     marginLeft: 8,
     flexDirection: 'column',
@@ -896,8 +941,6 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     fontSize: 16,
   },
-
-  // Empty State - Responsive
   emptyStateContainer: {
     flex: 1,
     justifyContent: 'center',

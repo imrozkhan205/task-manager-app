@@ -1,4 +1,4 @@
-// app/(tabs)/_layout.tsx - Corrected Code
+// app/(tabs)/_layout.tsx
 import { Tabs, router } from 'expo-router';
 import { Platform, Text, View, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';

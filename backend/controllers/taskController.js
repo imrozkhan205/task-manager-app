@@ -1,10 +1,48 @@
 import Task from '../models/Task.js';
 
 // Get all tasks for the logged-in user
+// controllers/taskController.js - Updated with pagination
+
 export const getTasks = async (req, res) => {
   try {
     const tasks = await Task.find({ userId: req.userId }).sort({ createdAt: -1 });
     res.json(tasks);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// NEW: Get tasks with pagination
+export const getTasksPaginated = async (req, res) => {
+  try {
+    // Get page and limit from query params, with defaults
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    
+    // Calculate skip value
+    const skip = (page - 1) * limit;
+    
+    // Get total count for pagination info
+    const totalTasks = await Task.countDocuments({ userId: req.userId });
+    
+    // Fetch paginated tasks
+    const tasks = await Task.find({ userId: req.userId })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+    
+    // Calculate total pages
+    const totalPages = Math.ceil(totalTasks / limit);
+    const hasMore = page < totalPages;
+    
+    // Send response with pagination metadata
+    res.json({
+      tasks,
+      currentPage: page,
+      totalPages,
+      totalTasks,
+      hasMore,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -16,6 +54,40 @@ export const getTask = async (req, res) => {
     const task = await Task.findOne({ _id: req.params.id, userId: req.userId });
     if (!task) return res.status(404).json({ message: 'Task not found' });
     res.json(task);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// OPTIONAL: Get task statistics (for header counts)
+export const getTaskStats = async (req, res) => {
+  try {
+    const stats = await Task.aggregate([
+      { $match: { userId: req.userId } },
+      {
+        $group: {
+          _id: '$status',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+    
+    // Format the response
+    const formattedStats = {
+      pending: 0,
+      'in progress': 0,
+      done: 0,
+      total: 0
+    };
+    
+    stats.forEach(stat => {
+      if (stat._id) {
+        formattedStats[stat._id] = stat.count;
+      }
+      formattedStats.total += stat.count;
+    });
+    
+    res.json(formattedStats);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

@@ -5,15 +5,14 @@ dotenv.config();
 export const connectDB = async () => {
   const mongoUri = process.env.MONGODB_URI
   try {
-    await mongoose.connect(mongoUri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    // REMOVED: useNewUrlParser: true and useUnifiedTopology: true
+    await mongoose.connect(mongoUri);
+    
     console.log('MongoDB connected 🟢');
   } catch (error) {
-    console.error('MongoDB connection error 🔴:', error.message);
+    // It's good practice to ensure error.message is treated as a string
+    const errorMessage = error instanceof Error ? error.message : 'Unknown connection error';
+    console.error('MongoDB connection error 🔴:', errorMessage);
     process.exit(1);
   }
 };
-
-

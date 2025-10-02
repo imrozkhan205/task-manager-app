@@ -10,7 +10,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { taskAPI, Task } from '../../services/api';
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -102,6 +102,14 @@ export default function SearchTab() {
     </View>
   );
 
+  const router = useRouter();
+
+  // Navigation function to push to the edit screen
+  const handlePush = (taskId: string) => {
+    // Navigates to the /edit-task route, passing the task's _id as a URL parameter
+    router.push({pathname: "/edit-task", params: {id: taskId}})
+  }
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
@@ -113,6 +121,7 @@ export default function SearchTab() {
             value={searchQuery}
             onChangeText={(text) => {
               setSearchQuery(text);
+              // Call filterTasks immediately on change
               filterTasks();
             }}
             placeholderTextColor="#9ca3af"
@@ -158,7 +167,12 @@ export default function SearchTab() {
             const statusInfo = getStatusInfo(item.status);
             
             return (
-              <View style={[styles.taskCard, { backgroundColor: statusInfo.bgColor }]}>
+              // 💡 The card is now a TouchableOpacity with the navigation logic
+              <TouchableOpacity
+                style={[styles.taskCard, { backgroundColor: statusInfo.bgColor }]}
+                onPress={() => handlePush(item._id)}
+                activeOpacity={0.8}
+              >
                 <View style={styles.taskHeader}>
                   <View style={[styles.statusBadge, { backgroundColor: statusInfo.color }]}>
                     <Text style={styles.statusIcon}>{statusInfo.icon}</Text>
@@ -181,7 +195,7 @@ export default function SearchTab() {
                     )}
                   </View>
                 </View>
-              </View>
+              </TouchableOpacity>
             );
           }}
         />
@@ -331,12 +345,16 @@ const styles = StyleSheet.create({
     lineHeight: isSmallDevice ? 20 : 24,
   },
   resultsFooter: {
-    // position: 'center',
-    bottom: 120, // Above tab bar
+    // This style block was changed to ensure the footer is correctly positioned
+    // The previous implementation used an absolute-like style within a ScrollView/FlatList context which can be tricky.
+    // Assuming you want the footer *above* the tab bar when search results are shown. 
+    position: 'absolute', // Use absolute positioning for the footer
+    bottom: 0, // Position it at the bottom of the screen
     left: 0,
     right: 0,
+    // Add height of the tab bar (approx 80-100) to bottom padding if not covered by SafeAreaView/tab bar component
+    paddingBottom: 100, // Adjust this padding based on your tab bar height
     backgroundColor: 'rgba(99, 102, 241, 0.9)',
-    paddingBottom:10,
     paddingTop:10,
     paddingHorizontal: 16,
     alignItems: 'center',

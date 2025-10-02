@@ -4,7 +4,7 @@
     "slug": "noteify",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/tasks-LP3.png",
+    "icon": "./assets/images/noteify-icon.png",
     "scheme": "mobile",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -36,7 +36,8 @@
         }
       ],
       "expo-secure-store",
-      "expo-font"
+      "expo-font",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true

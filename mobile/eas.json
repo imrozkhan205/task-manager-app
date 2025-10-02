@@ -12,10 +12,7 @@
       "distribution": "internal"
     },
     "production": {
-      "autoIncrement": true,
-      "cache": {
-        "clear": true
-      }
+      "autoIncrement": true
     }
   },
   "submit": {

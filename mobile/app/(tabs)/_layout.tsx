@@ -3,9 +3,11 @@ import { Tabs, router } from 'expo-router';
 import { Platform, Text, View, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
+import { LogBox } from 'react-native';
 const { width: screenWidth } = Dimensions.get('window');
 const isSmallDevice = screenWidth < 375;
+
+LogBox.ignoreAllLogs(true);
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();

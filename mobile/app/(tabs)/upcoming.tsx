@@ -1,5 +1,5 @@
-// app/(tabs)/upcoming.tsx - Updated to show Calendar view
-import { useState, useCallback } from 'react';
+// app/(tabs)/upcoming.tsx
+import { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { taskAPI, Task } from '../../services/api';
+// 💡 Import the functions from your new file
+import { 
+    scheduleTodayTaskNotifications 
+} from '../../services/notifications'; 
+
 
 const { width: screenWidth } = Dimensions.get('window');
 const isSmallDevice = screenWidth < 375;
@@ -20,6 +25,7 @@ const isSmallDevice = screenWidth < 375;
 interface EnhancedTask extends Omit<Task, 'completed'> {
   status: 'pending' | 'in progress' | 'done';
   completed?: boolean;
+  priority: 'low' | 'medium' | 'high';
 }
 
 interface CalendarDay {
@@ -36,14 +42,21 @@ export default function CalendarTab() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const router = useRouter();
 
+  // 1. Main task fetching function (now calls the imported scheduler)
   const fetchTasks = async () => {
     try {
       const data = await taskAPI.getTasks();
-      const enhancedTasks = data.map((task: Task) => ({
+      const enhancedTasks: EnhancedTask[] = data.map((task: Task) => ({
         ...task,
+        priority: (task as any).priority || 'medium', 
         status: task.status || (task.completed ? 'done' : 'pending'),
       }));
+      
       setTasks(enhancedTasks);
+      
+      // Schedule notifications using the imported function
+      await scheduleTodayTaskNotifications(enhancedTasks);
+      
     } catch (err) {
       console.error("❌ Failed to fetch tasks:", err);
     } finally {
@@ -51,13 +64,14 @@ export default function CalendarTab() {
     }
   };
 
+
+  // 3. Hook to fetch data and schedule notifications on tab focus
   useFocusEffect(
     useCallback(() => {
       fetchTasks();
     }, [])
   );
-
-  // Generate calendar days for current month
+  
   const generateCalendarDays = (): CalendarDay[] => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
@@ -191,7 +205,7 @@ export default function CalendarTab() {
 
   const renderTaskItem = ({ item }: { item: EnhancedTask }) => {
     const statusInfo = getStatusInfo(item.status);
-    const priorityInfo = getPriorityInfo(item.priority);
+    const priorityInfo = getPriorityInfo(item.priority || 'medium'); 
     
     return (
       <TouchableOpacity

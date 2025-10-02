@@ -250,6 +250,13 @@ export const taskAPI = {
     return res.data;
   },
   
+  updateTask: async (id: string, data: UpdateTaskData): Promise<Task> => {
+    console.log("✏️ Updating task:", id);
+    const res = await makeAuthenticatedRequest('put', `/tasks/${id}`, data);
+    console.log("✅ Task updated successfully");
+    return res.data;
+  },
+
   // NEW: Get tasks with pagination
   getTasksPaginated: async (page: number = 1, limit: number = 5): Promise<PaginatedResponse> => {
     console.log(`📋 Fetching tasks - Page ${page}, Limit ${limit}...`);
@@ -279,12 +286,7 @@ export const taskAPI = {
   },
 
   // Updated to use PATCH and UpdateTaskData to align with standard REST practices
-  updateTask: async (id: string, updates: UpdateTaskData): Promise<Task> => {
-    console.log("✏️ Updating task:", id);
-    const res = await makeAuthenticatedRequest('patch', `/tasks/${id}`, updates);
-    console.log("✅ Task updated successfully");
-    return res.data;
-  },
+  
 
   deleteTask: async (id: string): Promise<{ message: string }> => {
     console.log("🗑️ Deleting task:", id);
